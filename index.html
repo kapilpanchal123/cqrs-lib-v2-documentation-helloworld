@@ -1,61 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Command Query Responsibility Segregation - CQRS</title>
+  <title>CQRS Framework</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link
     href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap"
     rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-chtml.min.js"></script>
   <style>
-    :root {
+    /* ══════════════════════════════════════════
+       THEME VARIABLES
+    ══════════════════════════════════════════ */
+    :root,
+    [data-theme="dark"] {
       --bg-base: #07090f;
       --bg-surface: #0d1120;
       --bg-elevated: #141929;
       --bg-card: #1a2035;
       --border: #242c45;
       --border-light: #2e3a5a;
+
       --accent-blue: #4a9eff;
       --accent-amber: #f0a940;
       --accent-green: #3dd68c;
       --accent-red: #ff5a5a;
       --accent-purple: #a78bfa;
+
       --text-primary: #e8eaf2;
       --text-secondary: #94a0bf;
       --text-muted: #556080;
       --text-code: #7dd3fc;
-      --mono: 'IBM Plex Mono', monospace;
-      --sans: 'IBM Plex Sans', sans-serif;
-      --serif: 'Playfair Display', serif;
-      --radius: 6px;
-      --radius-lg: 12px;
+
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, .45);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, .6);
+
+      --nav-bg: rgba(7, 9, 15, .88);
+      --code-bg: #080b14;
+      --grid-line: rgba(74, 158, 255, .03);
+
+      --uml-box-fill: #1a2035;
+      --uml-box-stroke: #2e3a5a;
+      --uml-text-fill: #e8eaf2;
+      --uml-sub-fill: #94a0bf;
     }
 
+    [data-theme="light"] {
+      --bg-base: #f0f4ff;
+      --bg-surface: #ffffff;
+      --bg-elevated: #edf1fc;
+      --bg-card: #ffffff;
+      --border: #d4daf0;
+      --border-light: #bcc5e8;
+
+      --accent-blue: #1a6fd4;
+      --accent-amber: #c47e00;
+      --accent-green: #1a9c62;
+      --accent-red: #d63030;
+      --accent-purple: #6b44e0;
+
+      --text-primary: #0f1629;
+      --text-secondary: #374266;
+      --text-muted: #7080a8;
+      --text-code: #1a5fa8;
+
+      --shadow-sm: 0 2px 8px rgba(20, 30, 80, .1);
+      --shadow-lg: 0 8px 32px rgba(20, 30, 80, .15);
+
+      --nav-bg: rgba(240, 244, 255, .92);
+      --code-bg: #f7f9ff;
+      --grid-line: rgba(26, 111, 212, .04);
+
+      --uml-box-fill: #ffffff;
+      --uml-box-stroke: #bcc5e8;
+      --uml-text-fill: #0f1629;
+      --uml-sub-fill: #374266;
+    }
+
+    /* ══════════════════════════════════════════
+       RESET + BASE
+    ══════════════════════════════════════════ */
     *,
     *::before,
     *::after {
       box-sizing: border-box;
       margin: 0;
-      padding: 0;
+      padding: 0
     }
 
     html {
-      scroll-behavior: smooth;
+      scroll-behavior: smooth
     }
 
     body {
       background: var(--bg-base);
       color: var(--text-primary);
-      font-family: var(--sans);
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 15px;
       line-height: 1.7;
       overflow-x: hidden;
+      transition: background .3s ease, color .3s ease;
     }
 
-    /* ── Grid noise overlay ── */
     body::before {
       content: '';
       position: fixed;
@@ -63,19 +111,22 @@
       pointer-events: none;
       z-index: 0;
       background-image:
-        linear-gradient(rgba(74, 158, 255, .03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(74, 158, 255, .03) 1px, transparent 1px);
+        linear-gradient(var(--grid-line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
       background-size: 48px 48px;
+      transition: background-image .3s;
     }
 
-    /* ── NAV ── */
+    /* ══════════════════════════════════════════
+       NAV
+    ══════════════════════════════════════════ */
     nav {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       z-index: 100;
-      background: rgba(7, 9, 15, .88);
+      background: var(--nav-bg);
       backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -83,10 +134,11 @@
       justify-content: space-between;
       padding: 0 2.5rem;
       height: 60px;
+      transition: background .3s, border-color .3s;
     }
 
     .nav-brand {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 13px;
       font-weight: 600;
       color: var(--accent-blue);
@@ -97,7 +149,7 @@
     .nav-links {
       display: flex;
       gap: 0;
-      list-style: none;
+      list-style: none
     }
 
     .nav-links a {
@@ -105,7 +157,7 @@
       padding: 0 1rem;
       height: 60px;
       line-height: 60px;
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
       font-weight: 500;
       color: var(--text-secondary);
@@ -118,11 +170,17 @@
 
     .nav-links a:hover {
       color: var(--accent-blue);
-      border-color: var(--accent-blue);
+      border-color: var(--accent-blue)
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem
     }
 
     .nav-badge {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
       padding: 3px 10px;
       border: 1px solid var(--accent-amber);
@@ -131,16 +189,80 @@
       letter-spacing: .06em;
     }
 
-    /* ── MAIN LAYOUT ── */
+    /* Theme Toggle */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text-secondary);
+      transition: all .2s ease;
+      user-select: none;
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue)
+    }
+
+    .toggle-track {
+      width: 32px;
+      height: 16px;
+      border-radius: 8px;
+      background: var(--border-light);
+      position: relative;
+      transition: background .3s;
+    }
+
+    [data-theme="light"] .toggle-track {
+      background: var(--accent-blue)
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      transition: transform .3s ease, background .3s;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+    }
+
+    [data-theme="light"] .toggle-thumb {
+      transform: translateX(16px)
+    }
+
+    .toggle-icon {
+      font-size: 13px;
+      transition: transform .3s
+    }
+
+    [data-theme="light"] .toggle-icon {
+      transform: rotate(180deg)
+    }
+
+    /* ══════════════════════════════════════════
+       LAYOUT
+    ══════════════════════════════════════════ */
     .wrapper {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 2rem;
       position: relative;
-      z-index: 1;
+      z-index: 1
     }
 
-    /* ── HERO ── */
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
     #hero {
       min-height: 100vh;
       display: flex;
@@ -153,7 +275,7 @@
     }
 
     .hero-eyebrow {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
       font-weight: 500;
       color: var(--accent-blue);
@@ -170,22 +292,23 @@
       display: block;
       width: 32px;
       height: 1px;
-      background: var(--accent-blue);
+      background: var(--accent-blue)
     }
 
     .hero-title {
-      font-family: var(--serif);
+      font-family: 'Playfair Display', serif;
       font-size: clamp(2.8rem, 6vw, 5.5rem);
       font-weight: 800;
       line-height: 1.05;
       color: var(--text-primary);
       margin-bottom: 1.5rem;
       max-width: 780px;
+      transition: color .3s;
     }
 
     .hero-title em {
       font-style: italic;
-      color: var(--accent-blue);
+      color: var(--accent-blue)
     }
 
     .hero-subtitle {
@@ -201,32 +324,45 @@
       display: flex;
       flex-wrap: wrap;
       gap: .5rem;
-      margin-bottom: 3rem;
+      margin-bottom: 3rem
     }
 
     .tag {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
       padding: 4px 12px;
       border: 1px solid var(--border-light);
       color: var(--text-muted);
       border-radius: 3px;
       letter-spacing: .05em;
+      transition: all .2s;
     }
 
     .tag.blue {
       border-color: rgba(74, 158, 255, .4);
-      color: var(--accent-blue);
+      color: var(--accent-blue)
     }
 
     .tag.amber {
       border-color: rgba(240, 169, 64, .4);
-      color: var(--accent-amber);
+      color: var(--accent-amber)
     }
 
     .tag.green {
       border-color: rgba(61, 214, 140, .4);
-      color: var(--accent-green);
+      color: var(--accent-green)
+    }
+
+    [data-theme="light"] .tag.blue {
+      border-color: rgba(26, 111, 212, .4)
+    }
+
+    [data-theme="light"] .tag.amber {
+      border-color: rgba(196, 126, 0, .4)
+    }
+
+    [data-theme="light"] .tag.green {
+      border-color: rgba(26, 156, 98, .4)
     }
 
     .hero-stats {
@@ -235,18 +371,20 @@
       gap: 1px;
       background: var(--border);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 6px;
       overflow: hidden;
       max-width: 620px;
+      box-shadow: var(--shadow-sm);
     }
 
     .stat {
       background: var(--bg-surface);
       padding: 1.25rem 1.5rem;
+      transition: background .3s
     }
 
     .stat-num {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 1.6rem;
       font-weight: 600;
       color: var(--accent-blue);
@@ -258,7 +396,7 @@
       font-size: 11px;
       color: var(--text-muted);
       letter-spacing: .06em;
-      text-transform: uppercase;
+      text-transform: uppercase
     }
 
     .hero-glow {
@@ -271,14 +409,21 @@
       pointer-events: none;
     }
 
-    /* ── SECTIONS ── */
+    [data-theme="light"] .hero-glow {
+      background: radial-gradient(circle, rgba(26, 111, 212, .06) 0%, transparent 70%);
+    }
+
+    /* ══════════════════════════════════════════
+       SECTIONS
+    ══════════════════════════════════════════ */
     section {
       padding: 100px 0;
       border-top: 1px solid var(--border);
+      transition: border-color .3s
     }
 
     .section-label {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
       font-weight: 500;
       color: var(--accent-amber);
@@ -295,11 +440,11 @@
       display: block;
       width: 24px;
       height: 1px;
-      background: var(--accent-amber);
+      background: var(--accent-amber)
     }
 
     .section-title {
-      font-family: var(--serif);
+      font-family: 'Playfair Display', serif;
       font-size: clamp(1.8rem, 3.5vw, 2.8rem);
       font-weight: 700;
       color: var(--text-primary);
@@ -316,52 +461,67 @@
       font-weight: 300;
     }
 
-    /* ── CARDS ── */
+    /* ══════════════════════════════════════════
+       CARDS
+    ══════════════════════════════════════════ */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
+      border-radius: 12px;
       padding: 2rem;
-      transition: border-color .2s;
+      transition: border-color .2s, background .3s, box-shadow .2s;
+      box-shadow: var(--shadow-sm);
     }
 
     .card:hover {
       border-color: var(--border-light);
+      box-shadow: var(--shadow-lg)
     }
 
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
+      gap: 1.5rem
     }
 
     .grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1.5rem;
+      gap: 1.5rem
     }
 
     @media(max-width:768px) {
 
       .grid-2,
       .grid-3 {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr
       }
 
       .hero-stats {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr
+      }
+
+      nav {
+        padding: 0 1rem
+      }
+
+      .nav-links {
+        display: none
       }
     }
 
-    /* ── COMPONENT CARDS ── */
+    /* ══════════════════════════════════════════
+       COMPONENT CARDS
+    ══════════════════════════════════════════ */
     .component-card {
       background: var(--bg-elevated);
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
+      border-radius: 12px;
       padding: 1.75rem;
       position: relative;
       overflow: hidden;
-      transition: border-color .2s, transform .2s;
+      transition: border-color .2s, transform .2s, background .3s, box-shadow .2s;
+      box-shadow: var(--shadow-sm);
     }
 
     .component-card::before {
@@ -379,34 +539,43 @@
     .component-card:hover {
       border-color: rgba(74, 158, 255, .4);
       transform: translateY(-2px);
+      box-shadow: var(--shadow-lg)
     }
 
     .component-card:hover::before {
-      opacity: 1;
+      opacity: 1
     }
 
     .component-card.amber::before {
-      background: linear-gradient(90deg, var(--accent-amber), transparent);
+      background: linear-gradient(90deg, var(--accent-amber), transparent)
     }
 
     .component-card.green::before {
-      background: linear-gradient(90deg, var(--accent-green), transparent);
+      background: linear-gradient(90deg, var(--accent-green), transparent)
     }
 
     .component-card.purple::before {
-      background: linear-gradient(90deg, var(--accent-purple), transparent);
+      background: linear-gradient(90deg, var(--accent-purple), transparent)
     }
 
     .component-card.red::before {
-      background: linear-gradient(90deg, var(--accent-red), transparent);
+      background: linear-gradient(90deg, var(--accent-red), transparent)
     }
 
     .component-card:hover.amber {
-      border-color: rgba(240, 169, 64, .4);
+      border-color: rgba(240, 169, 64, .4)
     }
 
     .component-card:hover.green {
-      border-color: rgba(61, 214, 140, .4);
+      border-color: rgba(61, 214, 140, .4)
+    }
+
+    .component-card:hover.purple {
+      border-color: rgba(167, 139, 250, .4)
+    }
+
+    .component-card:hover.red {
+      border-color: rgba(255, 90, 90, .4)
     }
 
     .comp-icon {
@@ -416,7 +585,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 14px;
       font-weight: 600;
       margin-bottom: 1.25rem;
@@ -428,29 +597,29 @@
     .comp-icon.amber {
       background: rgba(240, 169, 64, .1);
       color: var(--accent-amber);
-      border-color: rgba(240, 169, 64, .2);
+      border-color: rgba(240, 169, 64, .2)
     }
 
     .comp-icon.green {
       background: rgba(61, 214, 140, .1);
       color: var(--accent-green);
-      border-color: rgba(61, 214, 140, .2);
+      border-color: rgba(61, 214, 140, .2)
     }
 
     .comp-icon.purple {
       background: rgba(167, 139, 250, .1);
       color: var(--accent-purple);
-      border-color: rgba(167, 139, 250, .2);
+      border-color: rgba(167, 139, 250, .2)
     }
 
     .comp-icon.red {
       background: rgba(255, 90, 90, .1);
       color: var(--accent-red);
-      border-color: rgba(255, 90, 90, .2);
+      border-color: rgba(255, 90, 90, .2)
     }
 
     .comp-title {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: .85rem;
       font-weight: 600;
       color: var(--text-primary);
@@ -460,11 +629,11 @@
     .comp-desc {
       font-size: .875rem;
       color: var(--text-secondary);
-      line-height: 1.7;
+      line-height: 1.7
     }
 
     .comp-type {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 10px;
       padding: 2px 8px;
       border-radius: 3px;
@@ -479,28 +648,32 @@
     .comp-type.interface {
       background: rgba(167, 139, 250, .1);
       color: var(--accent-purple);
-      border-color: rgba(167, 139, 250, .2);
+      border-color: rgba(167, 139, 250, .2)
     }
 
     .comp-type.abstract {
       background: rgba(240, 169, 64, .1);
       color: var(--accent-amber);
-      border-color: rgba(240, 169, 64, .2);
+      border-color: rgba(240, 169, 64, .2)
     }
 
     .comp-type.enum {
       background: rgba(61, 214, 140, .1);
       color: var(--accent-green);
-      border-color: rgba(61, 214, 140, .2);
+      border-color: rgba(61, 214, 140, .2)
     }
 
-    /* ── CODE BLOCKS ── */
+    /* ══════════════════════════════════════════
+       CODE BLOCKS
+    ══════════════════════════════════════════ */
     .code-block {
-      background: #080b14;
+      background: var(--code-bg);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: 6px;
       overflow: hidden;
       margin: 1.5rem 0;
+      box-shadow: var(--shadow-sm);
+      transition: background .3s, border-color .3s;
     }
 
     .code-header {
@@ -510,88 +683,119 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      transition: background .3s;
     }
 
     .code-lang {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 10px;
       color: var(--text-muted);
       letter-spacing: .08em;
-      text-transform: uppercase;
+      text-transform: uppercase
     }
 
     .code-dots {
       display: flex;
-      gap: 5px;
+      gap: 5px
     }
 
     .code-dots span {
       width: 9px;
       height: 9px;
       border-radius: 50%;
-      background: var(--border-light);
+      background: var(--border-light)
     }
 
     pre {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: .82rem;
       line-height: 1.7;
       color: var(--text-primary);
       padding: 1.5rem 1.25rem;
       overflow-x: auto;
       tab-size: 2;
+      transition: color .3s;
     }
 
     code {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace
     }
 
-    /* Syntax highlight token colors */
+    /* Syntax tokens */
     .kw {
-      color: #569cd6;
+      color: #569cd6
     }
 
     .cl {
-      color: #4ec9b0;
+      color: #4ec9b0
     }
 
     .fn {
-      color: #dcdcaa;
+      color: #dcdcaa
     }
 
     .st {
-      color: #ce9178;
+      color: #ce9178
     }
 
     .cm {
       color: #6a9955;
-      font-style: italic;
+      font-style: italic
     }
 
     .an {
-      color: var(--accent-amber);
+      color: var(--accent-amber)
     }
 
     .nu {
-      color: #b5cea8;
+      color: #b5cea8
     }
 
     .tp {
-      color: var(--accent-purple);
+      color: var(--accent-purple)
     }
 
-    /* ── UML DIAGRAMS ── */
+    [data-theme="light"] .kw {
+      color: #0070c1
+    }
+
+    [data-theme="light"] .cl {
+      color: #267f99
+    }
+
+    [data-theme="light"] .fn {
+      color: #795e26
+    }
+
+    [data-theme="light"] .st {
+      color: #a31515
+    }
+
+    [data-theme="light"] .cm {
+      color: #008000;
+      font-style: italic
+    }
+
+    [data-theme="light"] .nu {
+      color: #098658
+    }
+
+    /* ══════════════════════════════════════════
+       DIAGRAMS
+    ══════════════════════════════════════════ */
     .diagram-wrapper {
       background: var(--bg-surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
+      border-radius: 12px;
       padding: 2rem;
       overflow-x: auto;
       margin: 2rem 0;
+      transition: background .3s, border-color .3s;
+      box-shadow: var(--shadow-sm);
     }
 
     .diagram-title {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
       color: var(--text-muted);
       letter-spacing: .1em;
@@ -605,22 +809,25 @@
     .diagram-title::before {
       content: '⬡';
       color: var(--accent-blue);
-      font-size: 14px;
+      font-size: 14px
     }
 
-    /* ── MATH ── */
+    /* ══════════════════════════════════════════
+       MATH
+    ══════════════════════════════════════════ */
     .math-block {
       background: var(--bg-elevated);
       border: 1px solid var(--border);
       border-left: 3px solid var(--accent-purple);
-      border-radius: var(--radius);
+      border-radius: 6px;
       padding: 1.5rem 2rem;
       margin: 1.5rem 0;
       overflow-x: auto;
+      transition: background .3s, border-color .3s;
     }
 
     .math-label {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 10px;
       color: var(--accent-purple);
       letter-spacing: .1em;
@@ -628,19 +835,21 @@
       margin-bottom: .75rem;
     }
 
-    /* ── PIPELINE PHASES ── */
+    /* ══════════════════════════════════════════
+       PIPELINE FLOW
+    ══════════════════════════════════════════ */
     .pipeline-flow {
       display: flex;
       flex-direction: column;
       gap: 0;
       position: relative;
-      margin: 2rem 0;
+      margin: 2rem 0
     }
 
     .phase {
       display: flex;
       gap: 1.5rem;
-      position: relative;
+      position: relative
     }
 
     .phase-indicator {
@@ -648,7 +857,7 @@
       flex-direction: column;
       align-items: center;
       flex-shrink: 0;
-      width: 48px;
+      width: 48px
     }
 
     .phase-dot {
@@ -658,43 +867,38 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 14px;
       font-weight: 600;
       flex-shrink: 0;
       border: 2px solid;
       position: relative;
       z-index: 1;
+      transition: all .3s;
     }
 
     .phase-dot.blue {
       background: rgba(74, 158, 255, .15);
       color: var(--accent-blue);
-      border-color: var(--accent-blue);
+      border-color: var(--accent-blue)
     }
 
     .phase-dot.amber {
       background: rgba(240, 169, 64, .15);
       color: var(--accent-amber);
-      border-color: var(--accent-amber);
+      border-color: var(--accent-amber)
     }
 
     .phase-dot.green {
       background: rgba(61, 214, 140, .15);
       color: var(--accent-green);
-      border-color: var(--accent-green);
-    }
-
-    .phase-dot.red {
-      background: rgba(255, 90, 90, .15);
-      color: var(--accent-red);
-      border-color: var(--accent-red);
+      border-color: var(--accent-green)
     }
 
     .phase-dot.purple {
       background: rgba(167, 139, 250, .15);
       color: var(--accent-purple);
-      border-color: var(--accent-purple);
+      border-color: var(--accent-purple)
     }
 
     .phase-line {
@@ -703,65 +907,34 @@
       background: var(--border);
       margin: 4px auto;
       min-height: 32px;
+      transition: background .3s
     }
 
     .phase-content {
       padding: 0 0 2.5rem 0;
       flex: 1;
-      padding-top: .75rem;
+      padding-top: .75rem
     }
 
     .phase-title {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: .85rem;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: .4rem;
+      margin-bottom: .4rem
     }
 
     .phase-desc {
       font-size: .875rem;
       color: var(--text-secondary);
-      line-height: 1.65;
+      line-height: 1.65
     }
 
-    /* ── STEP LIST ── */
-    .step-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin: 1.5rem 0;
-    }
-
-    .step-list li {
-      display: flex;
-      gap: 1rem;
-      align-items: flex-start;
-    }
-
-    .step-num {
-      font-family: var(--mono);
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--accent-blue);
-      background: rgba(74, 158, 255, .1);
-      border: 1px solid rgba(74, 158, 255, .2);
-      border-radius: 4px;
-      padding: 2px 8px;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .step-text {
-      font-size: .875rem;
-      color: var(--text-secondary);
-      line-height: 1.65;
-    }
-
-    /* ── CALLOUTS ── */
+    /* ══════════════════════════════════════════
+       CALLOUTS
+    ══════════════════════════════════════════ */
     .callout {
-      border-radius: var(--radius);
+      border-radius: 6px;
       padding: 1rem 1.25rem;
       margin: 1.25rem 0;
       border-left: 3px solid;
@@ -770,52 +943,71 @@
       font-size: .875rem;
       color: var(--text-secondary);
       line-height: 1.65;
+      transition: background .3s;
     }
 
     .callout.info {
       background: rgba(74, 158, 255, .05);
-      border-color: var(--accent-blue);
+      border-color: var(--accent-blue)
     }
 
     .callout.warn {
       background: rgba(240, 169, 64, .05);
-      border-color: var(--accent-amber);
+      border-color: var(--accent-amber)
     }
 
     .callout.success {
       background: rgba(61, 214, 140, .05);
-      border-color: var(--accent-green);
+      border-color: var(--accent-green)
     }
 
     .callout.danger {
       background: rgba(255, 90, 90, .05);
-      border-color: var(--accent-red);
+      border-color: var(--accent-red)
     }
 
     .callout-icon {
       font-size: 1rem;
       flex-shrink: 0;
-      margin-top: 2px;
+      margin-top: 2px
     }
 
-    /* ── TABLE ── */
+    [data-theme="light"] .callout.info {
+      background: rgba(26, 111, 212, .06)
+    }
+
+    [data-theme="light"] .callout.warn {
+      background: rgba(196, 126, 0, .06)
+    }
+
+    [data-theme="light"] .callout.success {
+      background: rgba(26, 156, 98, .06)
+    }
+
+    [data-theme="light"] .callout.danger {
+      background: rgba(214, 48, 48, .06)
+    }
+
+    /* ══════════════════════════════════════════
+       TABLE
+    ══════════════════════════════════════════ */
     .tbl-wrap {
       overflow-x: auto;
-      margin: 1.5rem 0;
+      margin: 1.5rem 0
     }
 
     table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: collapse
     }
 
     thead tr {
-      border-bottom: 2px solid var(--border-light);
+      border-bottom: 2px solid var(--border-light)
     }
 
     th {
       text-align: left;
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 11px;
       font-weight: 500;
       color: var(--text-muted);
@@ -830,21 +1022,24 @@
       color: var(--text-secondary);
       border-bottom: 1px solid var(--border);
       vertical-align: top;
+      transition: background .2s;
     }
 
     td:first-child {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: .8rem;
-      color: var(--text-code);
+      color: var(--text-code)
     }
 
     tbody tr:hover td {
-      background: var(--bg-elevated);
+      background: var(--bg-elevated)
     }
 
-    /* ── ANCHOR HEADINGS ── */
+    /* ══════════════════════════════════════════
+       HEADINGS
+    ══════════════════════════════════════════ */
     h2.sh {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: .8rem;
       font-weight: 600;
       color: var(--accent-blue);
@@ -854,43 +1049,54 @@
     }
 
     h3.sh {
-      font-family: var(--sans);
+      font-family: 'IBM Plex Sans', sans-serif;
       font-size: 1.05rem;
       font-weight: 600;
       color: var(--text-primary);
       margin: 2rem 0 .75rem;
     }
 
-    /* ── INLINE CODE ── */
+    /* ══════════════════════════════════════════
+       INLINE CODE
+    ══════════════════════════════════════════ */
     ic {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: .82em;
       color: var(--text-code);
       background: rgba(74, 158, 255, .08);
       padding: 1px 6px;
       border-radius: 3px;
       border: 1px solid rgba(74, 158, 255, .15);
+      transition: background .3s, color .3s;
     }
 
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 3rem 0;
-      text-align: center;
-      font-family: var(--mono);
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: .06em;
+    [data-theme="light"] ic {
+      background: rgba(26, 111, 212, .08);
+      border-color: rgba(26, 111, 212, .18);
     }
 
-    footer a {
-      color: var(--accent-blue);
-      text-decoration: none;
+    /* ══════════════════════════════════════════
+       ACCURACY BADGE
+    ══════════════════════════════════════════ */
+    .accuracy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      padding: 3px 10px;
+      border-radius: 3px;
+      background: rgba(255, 90, 90, .08);
+      color: var(--accent-red);
+      border: 1px solid rgba(255, 90, 90, .25);
+      margin-left: .5rem;
     }
 
-    /* ── TABS ── */
+    /* ══════════════════════════════════════════
+       TABS
+    ══════════════════════════════════════════ */
     .tabs {
-      margin: 1.5rem 0;
+      margin: 1.5rem 0
     }
 
     .tab-bar {
@@ -898,10 +1104,11 @@
       border-bottom: 1px solid var(--border);
       gap: 0;
       overflow-x: auto;
+      transition: border-color .3s;
     }
 
     .tab-btn {
-      font-family: var(--mono);
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 12px;
       font-weight: 500;
       padding: .6rem 1.25rem;
@@ -918,93 +1125,59 @@
 
     .tab-btn.active {
       color: var(--accent-blue);
-      border-bottom-color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue)
     }
 
     .tab-btn:hover {
-      color: var(--text-primary);
+      color: var(--text-primary)
     }
 
     .tab-panel {
-      display: none;
+      display: none
     }
 
     .tab-panel.active {
-      display: block;
+      display: block
     }
 
-    /* ── SVG UML ── */
-    .uml-box {
-      rx: 4;
-      ry: 4;
-      fill: #1a2035;
-      stroke: #2e3a5a;
-      stroke-width: 1;
-    }
-
-    .uml-header {
-      fill: #242c45;
-    }
-
-    .uml-text {
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 3rem 0;
+      text-align: center;
       font-family: 'IBM Plex Mono', monospace;
-      fill: #e8eaf2;
-      font-size: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: .06em;
+      transition: border-color .3s;
     }
 
-    .uml-small {
-      font-family: 'IBM Plex Mono', monospace;
-      fill: #94a0bf;
-      font-size: 10px;
+    footer a {
+      color: var(--accent-blue);
+      text-decoration: none
     }
 
-    .uml-interface {
-      fill: #3d8ef020;
-      stroke: #4a9eff;
+    /* ══════════════════════════════════════════
+       REVEAL ANIMATION
+    ══════════════════════════════════════════ */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .5s ease, transform .5s ease;
     }
 
-    .uml-abstract {
-      fill: #f0a94020;
-      stroke: #f0a940;
-    }
-
-    .uml-class {
-      fill: #3dd68c20;
-      stroke: #3dd68c;
-    }
-
-    .uml-enum {
-      fill: #a78bfa20;
-      stroke: #a78bfa;
-    }
-
-    .uml-arrow {
-      stroke: #4a9eff;
-      stroke-width: 1.5;
-      fill: none;
-      marker-end: url(#arrowhead);
-    }
-
-    .uml-impl {
-      stroke: #3dd68c;
-      stroke-width: 1.5;
-      fill: none;
-      stroke-dasharray: 6 3;
-      marker-end: url(#arrowhead-green);
-    }
-
-    .uml-compose {
-      stroke: #f0a940;
-      stroke-width: 1.5;
-      fill: none;
-      marker-end: url(#arrowhead-amber);
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0)
     }
   </style>
 </head>
 
 <body>
 
-  <!-- NAV -->
+  <!-- ══ NAV ══ -->
   <nav>
     <div class="nav-brand">CQRS Framework</div>
     <ul class="nav-links">
@@ -1015,25 +1188,31 @@
       <li><a href="#usage">Usage Guide</a></li>
       <li><a href="#api">API Ref</a></li>
     </ul>
-    <span class="nav-badge">v0.2.14</span>
+    <div class="nav-right">
+      <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark mode">
+        <span class="toggle-icon">☀️</span>
+        <div class="toggle-track">
+          <div class="toggle-thumb"></div>
+        </div>
+        <span id="theme-label" style="letter-spacing:.04em">Light</span>
+      </button>
+      <span class="nav-badge">v0.2.14</span>
+    </div>
   </nav>
 
-  <!-- HERO -->
+  <!-- ══ HERO ══ -->
   <div class="wrapper">
     <section id="hero">
       <div class="hero-glow"></div>
-
+      <div class="hero-eyebrow">Command Query Responsibility Segregation</div>
       <h1 class="hero-title">
-        Command Query Responsibility Segregation - <br>
-        <em>CQRS</em>
+        Command Query<br>Responsibility<br><em>Segregation</em>
       </h1>
-
       <p class="hero-subtitle">
         A high-performance, pattern-driven Java framework for CQRS command processing pipelines.
         Decouples business logic from cross-cutting concerns via composable middleware chains,
-        deterministic transaction management, and pluggable failure strategies.
+        deterministic savepoint-based transaction management, and pluggable failure strategies.
       </p>
-
       <div class="hero-tags">
         <span class="tag blue">CQRS</span>
         <span class="tag blue">Chain of Responsibility</span>
@@ -1043,9 +1222,9 @@
         <span class="tag green">Savepoints</span>
         <span class="tag green">Idempotency</span>
         <span class="tag">Java 17+</span>
+        <span class="tag">Guava TypeToken</span>
         <span class="tag">Type-Safe</span>
       </div>
-
       <div class="hero-stats">
         <div class="stat">
           <div class="stat-num">3</div>
@@ -1067,7 +1246,7 @@
     </section>
   </div>
 
-  <!-- ARCHITECTURE -->
+  <!-- ══ ARCHITECTURE ══ -->
   <div id="architecture">
     <div class="wrapper">
       <section>
@@ -1075,36 +1254,29 @@
         <h2 class="section-title">Class Hierarchy &amp; Relationships</h2>
         <p class="section-desc">
           The framework is organized into four layers: core abstractions, infrastructure wiring,
-          JDBC transaction support, and default implementations. Each layer is designed
-          for independent extensibility.
+          JDBC transaction support, and default implementations. Each layer is independently extensible.
         </p>
 
-        <!-- CLASS DIAGRAM SVG -->
-        <div class="diagram-wrapper">
+        <!-- CLASS DIAGRAM -->
+        <div class="diagram-wrapper reveal">
           <div class="diagram-title">Core Class Diagram — CQRS Framework</div>
           <svg viewBox="0 0 1100 860" xmlns="http://www.w3.org/2000/svg"
             style="width:100%;max-width:1100px;display:block">
             <defs>
               <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#4a9eff" />
+                <polygon points="0 0,8 3,0 6" fill="#4a9eff" />
               </marker>
               <marker id="arrowhead-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#3dd68c" />
+                <polygon points="0 0,8 3,0 6" fill="#3dd68c" />
               </marker>
               <marker id="arrowhead-amber" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#f0a940" />
-              </marker>
-              <marker id="diamond-amber" markerWidth="10" markerHeight="8" refX="0" refY="4" orient="auto">
-                <polygon points="0 4, 5 0, 10 4, 5 8" fill="#f0a940" />
+                <polygon points="0 0,8 3,0 6" fill="#f0a940" />
               </marker>
             </defs>
 
-            <!-- ===== INTERFACES ROW ===== -->
-
-            <!-- CommandHandler<REQ,RES> interface -->
+            <!-- Interfaces row -->
             <rect x="10" y="20" width="200" height="100" rx="4" fill="#4a9eff18" stroke="#4a9eff" stroke-width="1.2" />
             <rect x="10" y="20" width="200" height="28" rx="4" fill="#4a9eff30" />
-            <rect x="10" y="44" width="200" height="4" fill="#4a9eff30" />
             <text x="110" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">«interface»</text>
             <text x="110" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8eaf2"
@@ -1117,10 +1289,8 @@
             <text x="20" y="113" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ handle(Command&lt;REQ&gt;):
               RES</text>
 
-            <!-- CommandMiddleware interface -->
             <rect x="240" y="20" width="180" height="88" rx="4" fill="#4a9eff18" stroke="#4a9eff" stroke-width="1.2" />
             <rect x="240" y="20" width="180" height="28" rx="4" fill="#4a9eff30" />
-            <rect x="240" y="44" width="180" height="4" fill="#4a9eff30" />
             <text x="330" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">«interface»</text>
             <text x="330" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8eaf2"
@@ -1129,10 +1299,8 @@
             <text x="250" y="88" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ invoke(Command&lt;?&gt;):
               void</text>
 
-            <!-- CommandPipeline interface -->
             <rect x="450" y="20" width="185" height="88" rx="4" fill="#4a9eff18" stroke="#4a9eff" stroke-width="1.2" />
             <rect x="450" y="20" width="185" height="28" rx="4" fill="#4a9eff30" />
-            <rect x="450" y="44" width="185" height="4" fill="#4a9eff30" />
             <text x="542" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">«interface»</text>
             <text x="542" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8eaf2"
@@ -1142,10 +1310,8 @@
               send(Command&lt;REQ&gt;)</text>
             <text x="540" y="100" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">: Supplier&lt;RES&gt;</text>
 
-            <!-- CommandExecutor interface -->
             <rect x="665" y="20" width="195" height="88" rx="4" fill="#4a9eff18" stroke="#4a9eff" stroke-width="1.2" />
             <rect x="665" y="20" width="195" height="28" rx="4" fill="#4a9eff30" />
-            <rect x="665" y="44" width="195" height="4" fill="#4a9eff30" />
             <text x="762" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">«interface»</text>
             <text x="762" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8eaf2"
@@ -1155,11 +1321,8 @@
               execute(Command&lt;REQ&gt;)</text>
             <text x="755" y="100" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">: Supplier&lt;RES&gt;</text>
 
-
-            <!-- CommandRouter interface -->
             <rect x="890" y="20" width="195" height="88" rx="4" fill="#4a9eff18" stroke="#4a9eff" stroke-width="1.2" />
             <rect x="890" y="20" width="195" height="28" rx="4" fill="#4a9eff30" />
-            <rect x="890" y="44" width="195" height="4" fill="#4a9eff30" />
             <text x="987" y="38" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">«interface»</text>
             <text x="987" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8eaf2"
@@ -1169,12 +1332,9 @@
               route(Command&lt;REQ&gt;)</text>
             <text x="980" y="100" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">: CommandHandler</text>
 
-
-            <!-- ===== ABSTRACT CLASS ===== -->
             <!-- AbstractCommandHandler -->
             <rect x="10" y="195" width="220" height="115" rx="4" fill="#f0a94018" stroke="#f0a940" stroke-width="1.2" />
             <rect x="10" y="195" width="220" height="28" rx="4" fill="#f0a94028" />
-            <rect x="10" y="219" width="220" height="4" fill="#f0a94028" />
             <text x="120" y="213" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#f0a940"
               font-weight="600">«abstract»</text>
             <text x="120" y="242" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8eaf2"
@@ -1183,21 +1343,19 @@
               RES&gt;</text>
             <line x1="10" y1="264" x2="230" y2="264" stroke="#f0a940" stroke-width=".5" opacity=".4" />
             <text x="20" y="278" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- requestTypeToken:
-              TypeToken</text>
+              TypeToken&lt;REQ&gt;</text>
             <text x="20" y="290" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- responseTypeToken:
-              TypeToken</text>
+              TypeToken&lt;RES&gt;</text>
             <text x="20" y="302" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ requestTypeToken():
-              TypeToken</text>
+              TypeToken&lt;REQ&gt;</text>
 
-            <!-- Arrow: AbstractCommandHandler implements CommandHandler -->
             <line x1="110" y1="195" x2="110" y2="120" stroke="#3dd68c" stroke-width="1.5" stroke-dasharray="6 3"
               marker-end="url(#arrowhead-green)" />
 
-            <!-- ===== Command class ===== -->
+            <!-- Command class -->
             <rect x="430" y="185" width="220" height="165" rx="4" fill="#3dd68c18" stroke="#3dd68c"
               stroke-width="1.2" />
             <rect x="430" y="185" width="220" height="28" rx="4" fill="#3dd68c28" />
-            <rect x="430" y="209" width="220" height="4" fill="#3dd68c28" />
             <text x="540" y="203" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#3dd68c"
               font-weight="600">«class»</text>
             <text x="540" y="228" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#e8eaf2"
@@ -1211,16 +1369,15 @@
             <text x="440" y="298" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- correlationId:
               String</text>
             <text x="440" y="312" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- payload: T</text>
-            <text x="440" y="326" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- tenantId, username, error
-              ...</text>
+            <text x="440" y="326" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- tenantId, username, error,
+              apiVersion</text>
             <text x="440" y="340" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- createdAt, updatedAt:
               OffsetDateTime</text>
 
-            <!-- ===== CommandStatus enum ===== -->
+            <!-- CommandStatus enum -->
             <rect x="680" y="185" width="185" height="135" rx="4" fill="#a78bfa18" stroke="#a78bfa"
               stroke-width="1.2" />
             <rect x="680" y="185" width="185" height="28" rx="4" fill="#a78bfa28" />
-            <rect x="680" y="209" width="185" height="4" fill="#a78bfa28" />
             <text x="772" y="203" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#a78bfa"
               font-weight="600">«enum»</text>
             <text x="772" y="228" text-anchor="middle" font-family="IBM Plex Mono" font-size="11" fill="#e8eaf2"
@@ -1232,9 +1389,7 @@
             <text x="690" y="295" font-family="IBM Plex Mono" font-size="9" fill="#a78bfa">COMPLETED</text>
             <text x="690" y="309" font-family="IBM Plex Mono" font-size="9" fill="#a78bfa">FAILED</text>
 
-            <!-- ===== DEFAULT IMPLEMENTATIONS ROW ===== -->
-
-            <!-- DefaultCommandPipeline -->
+            <!-- Default implementations -->
             <rect x="10" y="410" width="210" height="115" rx="4" fill="#3dd68c18" stroke="#3dd68c" stroke-width="1.2" />
             <rect x="10" y="410" width="210" height="28" rx="4" fill="#3dd68c28" />
             <text x="115" y="428" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#3dd68c"
@@ -1246,20 +1401,14 @@
               List&lt;?&gt;</text>
             <text x="20" y="482" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- failureHandlerList:
               List&lt;?&gt;</text>
-            <text x="20" y="496" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- txManager</text>
+            <text x="20" y="496" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">-
+              commandTransactionManager</text>
             <text x="20" y="510" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ send():
               Supplier&lt;RES&gt;</text>
 
-            <!-- implements CommandPipeline -->
-            <path d="M115 410 
-                L115 340 
-                L300 340 
-                L300 150 
-                L550 150 
-                L550 108" fill="none" stroke="#3dd68c" stroke-width="1.2" class="conn impl" stroke-dasharray="5 3"
-              marker-end="url(#arrowhead-green)" />
+            <path d="M115 410 L115 340 L300 340 L300 150 L550 150 L550 108" fill="none" stroke="#3dd68c"
+              stroke-width="1.2" stroke-dasharray="5 3" marker-end="url(#arrowhead-green)" />
 
-            <!-- DefaultSynchronousCommandExecutor -->
             <rect x="245" y="410" width="215" height="110" rx="4" fill="#3dd68c18" stroke="#3dd68c"
               stroke-width="1.2" />
             <rect x="245" y="410" width="215" height="28" rx="4" fill="#3dd68c28" />
@@ -1270,10 +1419,11 @@
               List&lt;CommandMiddleware&gt;</text>
             <text x="255" y="468" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- router:
               CommandRouter</text>
-            <text x="255" y="492" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ execute(Command):
-              Supplier</text>
+            <text x="255" y="482" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">Sets PROCESSING status →
+              runs</text>
+            <text x="255" y="496" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">all middleware → routes
+              handler</text>
 
-            <!-- DefaultCommandRouter -->
             <rect x="480" y="410" width="205" height="95" rx="4" fill="#3dd68c18" stroke="#3dd68c" stroke-width="1.2" />
             <rect x="480" y="410" width="205" height="28" rx="4" fill="#3dd68c28" />
             <text x="582" y="428" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#3dd68c"
@@ -1281,11 +1431,11 @@
             <line x1="480" y1="438" x2="685" y2="438" stroke="#3dd68c" stroke-width=".5" opacity=".4" />
             <text x="490" y="454" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- commandHandlers:
               List&lt;Handler&gt;</text>
-            <text x="490" y="468" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ route(Command):
+            <text x="490" y="468" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ route(cmd):
               CommandHandler</text>
-            <text x="490" y="482" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- O(n) linear scan</text>
+            <text x="490" y="482" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">O(n) linear scan via
+              matches()</text>
 
-            <!-- DefaultCommandService (CommandStore) -->
             <rect x="705" y="410" width="200" height="110" rx="4" fill="#3dd68c18" stroke="#3dd68c"
               stroke-width="1.2" />
             <rect x="705" y="410" width="200" height="28" rx="4" fill="#3dd68c28" />
@@ -1298,9 +1448,9 @@
               CommandJsonMapper</text>
             <text x="715" y="482" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- dataSource:
               DataSource</text>
-            <text x="715" y="496" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">save / update methods</text>
+            <text x="715" y="496" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">Manages own tx per
+              operation</text>
 
-            <!-- CommandModuleBuilder -->
             <rect x="920" y="410" width="165" height="130" rx="4" fill="#f0a94018" stroke="#f0a940"
               stroke-width="1.2" />
             <rect x="920" y="410" width="165" height="28" rx="4" fill="#f0a94028" />
@@ -1316,7 +1466,7 @@
             <text x="930" y="522" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ build():
               CommandModule</text>
 
-            <!-- ===== FAILURE SECTION ===== -->
+            <!-- Failure section -->
             <rect x="10" y="600" width="200" height="95" rx="4" fill="#ff5a5a18" stroke="#ff5a5a" stroke-width="1.2" />
             <rect x="10" y="600" width="200" height="28" rx="4" fill="#ff5a5a28" />
             <text x="110" y="618" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#ff5a5a"
@@ -1329,7 +1479,6 @@
             <text x="20" y="675" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ onFailure(cmd, t):
               void</text>
 
-            <!-- CommandFailureStage enum -->
             <rect x="235" y="600" width="190" height="95" rx="4" fill="#a78bfa18" stroke="#a78bfa" stroke-width="1.2" />
             <rect x="235" y="600" width="190" height="28" rx="4" fill="#a78bfa28" />
             <text x="330" y="618" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#a78bfa"
@@ -1337,10 +1486,10 @@
             <text x="330" y="638" text-anchor="middle" font-family="IBM Plex Mono" font-size="10"
               fill="#e8eaf2">CommandFailureStage</text>
             <line x1="235" y1="645" x2="425" y2="645" stroke="#a78bfa" stroke-width=".5" opacity=".4" />
-            <text x="245" y="661" font-family="IBM Plex Mono" font-size="9" fill="#a78bfa">EXECUTION</text>
-            <text x="245" y="675" font-family="IBM Plex Mono" font-size="9" fill="#a78bfa">POST_PROCESSING</text>
+            <text x="245" y="661" font-family="IBM Plex Mono" font-size="9" fill="#a78bfa">EXECUTION — failure</text>
+            <text x="245" y="675" font-family="IBM Plex Mono" font-size="9" fill="#a78bfa">POST_PROCESSING —
+              failure</text>
 
-            <!-- JDBC section -->
             <rect x="450" y="600" width="210" height="110" rx="4" fill="#3dd68c18" stroke="#3dd68c"
               stroke-width="1.2" />
             <rect x="450" y="600" width="210" height="28" rx="4" fill="#3dd68c28" />
@@ -1352,12 +1501,11 @@
             <text x="460" y="658" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- dataSource:
               DataSource</text>
             <text x="460" y="672" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ execute(action): T</text>
-            <text x="460" y="686" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ executeIndependent(a):
+            <text x="460" y="686" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">+ executeIndependent(action):
               T</text>
-            <text x="460" y="700" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">uses JdbcConnectionHolder
-              TL</text>
+            <text x="460" y="700" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">JdbcConnectionHolder
+              (ThreadLocal)</text>
 
-            <!-- JdbcCommandSavepointManager -->
             <rect x="685" y="600" width="210" height="110" rx="4" fill="#3dd68c18" stroke="#3dd68c"
               stroke-width="1.2" />
             <rect x="685" y="600" width="210" height="28" rx="4" fill="#3dd68c28" />
@@ -1367,74 +1515,63 @@
             <text x="695" y="644" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- connection:
               Connection</text>
             <text x="695" y="658" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- savepoints:
-              Map&lt;String,SP&gt;</text>
-            <text x="695" y="672" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">savePoint / rollback /
-              release</text>
-            <text x="695" y="686" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">setRollbackOnly()</text>
+              LinkedHashMap</text>
+            <text x="695" y="672" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">savePoint /
+              rollbackToSavepoint</text>
+            <text x="695" y="686" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">releaseSavepoint /
+              setRollbackOnly</text>
 
-            <!-- CommandModule aggregate -->
             <rect x="920" y="600" width="165" height="110" rx="4" fill="#f0a94018" stroke="#f0a940"
               stroke-width="1.2" />
             <rect x="920" y="600" width="165" height="28" rx="4" fill="#f0a94028" />
             <text x="1002" y="618" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#f0a940"
               font-weight="600">CommandModule</text>
             <line x1="920" y1="628" x2="1085" y2="628" stroke="#f0a940" stroke-width=".5" opacity=".4" />
-            <text x="930" y="644" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- pipeline</text>
-            <text x="930" y="658" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- router</text>
-            <text x="930" y="672" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- executor</text>
-            <text x="930" y="686" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- commandStore</text>
+            <text x="930" y="644" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- pipeline:
+              CommandPipeline</text>
+            <text x="930" y="658" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- router:
+              CommandRouter</text>
+            <text x="930" y="672" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- executor:
+              CommandExecutor</text>
+            <text x="930" y="686" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">- commandStore:
+              CommandStore</text>
 
-            <!-- CommandModuleBuilder builds CommandModule -->
             <line x1="1002" y1="540" x2="1002" y2="600" stroke="#f0a940" stroke-width="1.5"
               marker-end="url(#arrowhead-amber)" />
 
+            <path d="M350 410 L350 340 L350 170 L760 170 L760 108" fill="none" stroke="#3dd68c" stroke-width="1.2"
+              stroke-dasharray="5 3" marker-end="url(#arrowhead-green)" />
+            <path d="M580 410 L580 380 L980 380 L980 108" fill="none" stroke="#3dd68c" stroke-width="1.2"
+              stroke-dasharray="5 3" marker-end="url(#arrowhead-green)" />
+
             <!-- Legend -->
-            <rect x="10" y="800" width="400" height="50" rx="4" fill="#0d1120" stroke="#242c45" stroke-width="1" />
-            <line x1="25" y1="820" x2="55" y2="820" stroke="#4a9eff" stroke-width="1.5" stroke-dasharray="6 3" />
-            <text x="65" y="824" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">implements</text>
-            <line x1="145" y1="820" x2="175" y2="820" stroke="#3dd68c" stroke-width="1.5" />
-            <text x="185" y="824" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">extends</text>
-            <line x1="245" y1="820" x2="275" y2="820" stroke="#f0a940" stroke-width="1.5"
+            <rect x="10" y="800" width="420" height="46" rx="4" fill="#0d112060" stroke="#242c45" stroke-width="1" />
+            <line x1="25" y1="823" x2="55" y2="823" stroke="#3dd68c" stroke-width="1.5" stroke-dasharray="6 3"
+              marker-end="url(#arrowhead-green)" />
+            <text x="64" y="827" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">implements interface</text>
+            <line x1="180" y1="823" x2="210" y2="823" stroke="#3dd68c" stroke-width="1.5"
+              marker-end="url(#arrowhead-green)" />
+            <text x="220" y="827" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">extends abstract</text>
+            <line x1="320" y1="823" x2="350" y2="823" stroke="#f0a940" stroke-width="1.5"
               marker-end="url(#arrowhead-amber)" />
-            <text x="285" y="824" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">creates / composes</text>
-
-            <!-- Relationship lines -->
-            <!-- DefaultSyncCommandExecutor implements CommandExecutor -->
-
-            <path d="M350 410 
-                L350 340 
-                L350 340 
-                L350 170 
-                L760 170 
-                L760 108" fill="none" stroke="#3dd68c" stroke-width="1.2" class="conn impl" stroke-dasharray="5 3"
-              marker-end="url(#arrowhead-green)" />
-
-            <!-- DefaultCommandRouter implements CommandRouter -->
-
-            <path d="M580 410 
-                L580 380 
-                L980 380 
-                L980 170 
-                L980 170 
-                L980 108" fill="none" stroke="#3dd68c" stroke-width="1.2" class="conn impl" stroke-dasharray="5 3"
-              marker-end="url(#arrowhead-green)" />
+            <text x="360" y="827" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">creates</text>
           </svg>
         </div>
 
         <!-- PIPELINE SEQUENCE DIAGRAM -->
-        <div class="diagram-wrapper" style="margin-top:2rem">
-          <div class="diagram-title">Pipeline Execution Sequence</div>
-          <svg viewBox="0 0 1060 520" xmlns="http://www.w3.org/2000/svg"
+        <div class="diagram-wrapper reveal" style="margin-top:2rem">
+          <div class="diagram-title">Pipeline Execution Sequence — Happy Path &amp; Failure Paths</div>
+          <svg viewBox="0 0 1060 540" xmlns="http://www.w3.org/2000/svg"
             style="width:100%;max-width:1060px;display:block">
             <defs>
               <marker id="seq-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#4a9eff" />
+                <polygon points="0 0,8 3,0 6" fill="#4a9eff" />
               </marker>
               <marker id="seq-arrow-ret" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#3dd68c" />
+                <polygon points="0 0,8 3,0 6" fill="#3dd68c" />
               </marker>
               <marker id="seq-arrow-err" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#ff5a5a" />
+                <polygon points="0 0,8 3,0 6" fill="#ff5a5a" />
               </marker>
             </defs>
 
@@ -1442,342 +1579,259 @@
             <rect x="20" y="10" width="110" height="32" rx="4" fill="#1a2035" stroke="#2e3a5a" />
             <text x="75" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">Controller</text>
-
             <rect x="175" y="10" width="120" height="32" rx="4" fill="#1a2035" stroke="#2e3a5a" />
             <text x="235" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">Pipeline</text>
-
             <rect x="340" y="10" width="120" height="32" rx="4" fill="#1a2035" stroke="#2e3a5a" />
             <text x="400" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">TxManager</text>
-
             <rect x="505" y="10" width="120" height="32" rx="4" fill="#1a2035" stroke="#2e3a5a" />
             <text x="565" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">Executor</text>
-
             <rect x="665" y="10" width="120" height="32" rx="4" fill="#1a2035" stroke="#2e3a5a" />
             <text x="725" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">Middleware</text>
-
             <rect x="820" y="10" width="120" height="32" rx="4" fill="#1a2035" stroke="#2e3a5a" />
             <text x="880" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">Handler</text>
-
             <rect x="960" y="10" width="90" height="32" rx="4" fill="#1a2035" stroke="#2e3a5a" />
             <text x="1005" y="30" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">PostProc.</text>
 
             <!-- Lifelines -->
-            <line x1="75" y1="42" x2="75" y2="510" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="235" y1="42" x2="235" y2="510" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="400" y1="42" x2="400" y2="510" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="565" y1="42" x2="565" y2="510" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="725" y1="42" x2="725" y2="510" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="880" y1="42" x2="880" y2="510" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
-            <line x1="1005" y1="42" x2="1005" y2="510" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
+            <line x1="75" y1="42" x2="75" y2="520" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
+            <line x1="235" y1="42" x2="235" y2="520" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
+            <line x1="400" y1="42" x2="400" y2="520" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
+            <line x1="565" y1="42" x2="565" y2="520" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
+            <line x1="725" y1="42" x2="725" y2="520" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
+            <line x1="880" y1="42" x2="880" y2="520" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
+            <line x1="1005" y1="42" x2="1005" y2="520" stroke="#242c45" stroke-width="1" stroke-dasharray="4 4" />
 
-            <!-- Sequence messages -->
-            <!-- 1: send(command) -->
+            <!-- Messages -->
             <line x1="75" y1="70" x2="227" y2="70" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#seq-arrow)" />
             <text x="145" y="65" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
               fill="#94a0bf">send(command)</text>
 
-            <!-- 2: execute(action) -->
             <line x1="235" y1="100" x2="392" y2="100" stroke="#4a9eff" stroke-width="1.5"
               marker-end="url(#seq-arrow)" />
             <text x="315" y="95" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
               fill="#94a0bf">execute(action)</text>
 
-            <!-- Transaction open box -->
-            <rect x="390" y="108" width="20" height="295" rx="2" fill="#4a9eff10" stroke="#4a9eff30" stroke-width="1" />
-            <text x="402" y="125" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#4a9eff"
+            <rect x="390" y="108" width="20" height="305" rx="2" fill="#4a9eff10" stroke="#4a9eff30" stroke-width="1" />
+            <text x="402" y="130" text-anchor="middle" font-family="IBM Plex Mono" font-size="8" fill="#4a9eff"
               writing-mode="tb">TRANSACTION</text>
 
-            <!-- 3: executor.execute(cmd) -->
             <line x1="400" y1="130" x2="557" y2="130" stroke="#4a9eff" stroke-width="1.5"
               marker-end="url(#seq-arrow)" />
             <text x="476" y="125" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
-              fill="#94a0bf">executor.execute(cmd)</text>
+              fill="#94a0bf">executor.execute(cmd) → sets PROCESSING</text>
 
-            <!-- 4: middleware.invoke -->
             <line x1="565" y1="160" x2="717" y2="160" stroke="#4a9eff" stroke-width="1.5"
               marker-end="url(#seq-arrow)" />
             <text x="640" y="155" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
               fill="#94a0bf">middleware.invoke(cmd)</text>
-
-            <!-- persistence note -->
-            <rect x="730" y="148" width="130" height="22" rx="3" fill="#f0a94010" stroke="#f0a94040" />
-            <text x="795" y="162" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
+            <rect x="730" y="148" width="140" height="22" rx="3" fill="#f0a94010" stroke="#f0a94040" />
+            <text x="800" y="162" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
               fill="#f0a940">save(cmd, PROCESSING)</text>
 
-            <!-- 5: route(cmd) -->
             <line x1="565" y1="200" x2="872" y2="200" stroke="#4a9eff" stroke-width="1.5"
               marker-end="url(#seq-arrow)" />
-            <text x="715" y="195" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#94a0bf">route →
-              handler resolved</text>
+            <text x="715" y="195" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
+              fill="#94a0bf">route(cmd) → handler resolved</text>
 
-            <!-- Savepoint box -->
-            <rect x="393" y="218" width="580" height="18" rx="2" fill="#3dd68c08" stroke="#3dd68c30" stroke-width="1" />
-            <text x="685" y="231" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
-              fill="#3dd68c">savePoint("preHandlerSavepoint")</text>
+            <rect x="393" y="218" width="600" height="18" rx="2" fill="#3dd68c08" stroke="#3dd68c30" stroke-width="1" />
+            <text x="695" y="231" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
+              fill="#3dd68c">savePoint("preHandlerSavepoint") ← isolates business writes</text>
 
-            <!-- 6: handler.handle(cmd) -->
             <line x1="565" y1="255" x2="872" y2="255" stroke="#4a9eff" stroke-width="1.5"
               marker-end="url(#seq-arrow)" />
             <text x="715" y="250" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
-              fill="#94a0bf">handler.handle(cmd)</text>
+              fill="#94a0bf">handlerSupplier.get() → handler.handle(cmd)</text>
 
-            <!-- Return from handler -->
             <line x1="872" y1="285" x2="573" y2="285" stroke="#3dd68c" stroke-width="1.5" stroke-dasharray="5 3"
               marker-end="url(#seq-arrow-ret)" />
             <text x="720" y="298" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
               fill="#3dd68c">RES</text>
 
-            <!-- 7: post-processor.run -->
-            <line x1="565" y1="320" x2="997" y2="320" stroke="#4a9eff" stroke-width="1.5"
+            <line x1="565" y1="318" x2="997" y2="318" stroke="#4a9eff" stroke-width="1.5"
               marker-end="url(#seq-arrow)" />
-            <text x="780" y="315" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
+            <text x="780" y="313" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
               fill="#94a0bf">postProcessor.run(cmd)</text>
-
-            <!-- post proc note -->
-            <rect x="730" y="328" width="130" height="22" rx="3" fill="#f0a94010" stroke="#f0a94040" />
-            <text x="795" y="342" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
+            <rect x="730" y="326" width="140" height="22" rx="3" fill="#f0a94010" stroke="#f0a94040" />
+            <text x="800" y="340" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
               fill="#f0a940">update(id, COMPLETED)</text>
 
-            <!-- Savepoint release -->
-            <rect x="393" y="365" width="580" height="18" rx="2" fill="#3dd68c08" stroke="#3dd68c30" stroke-width="1" />
-            <text x="685" y="378" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
-              fill="#3dd68c">releaseSavepoint → commit()</text>
+            <rect x="393" y="360" width="600" height="18" rx="2" fill="#3dd68c08" stroke="#3dd68c30" stroke-width="1" />
+            <text x="695" y="373" text-anchor="middle" font-family="IBM Plex Mono" font-size="8"
+              fill="#3dd68c">releaseSavepoint → PipelineResult.success(RES) → commit</text>
 
-            <!-- Return: PipelineResult.success -->
-            <line x1="400" y1="400" x2="243" y2="400" stroke="#3dd68c" stroke-width="1.5" stroke-dasharray="5 3"
+            <line x1="400" y1="398" x2="243" y2="398" stroke="#3dd68c" stroke-width="1.5" stroke-dasharray="5 3"
               marker-end="url(#seq-arrow-ret)" />
-            <text x="320" y="415" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
+            <text x="320" y="413" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
               fill="#3dd68c">PipelineResult.success(RES)</text>
 
-            <!-- Return to controller -->
             <line x1="235" y1="440" x2="83" y2="440" stroke="#3dd68c" stroke-width="1.5" stroke-dasharray="5 3"
               marker-end="url(#seq-arrow-ret)" />
-            <text x="155" y="455" text-anchor="middle" font-family="IBM Plex Mono" font-size="9" fill="#3dd68c">Supplier
-              → .get() → RES</text>
+            <text x="155" y="455" text-anchor="middle" font-family="IBM Plex Mono" font-size="9"
+              fill="#3dd68c">Supplier.get() → RES</text>
 
-            <!-- Failure path note -->
-            <rect x="10" y="475" width="500" height="30" rx="4" fill="#ff5a5a08" stroke="#ff5a5a30" stroke-width="1" />
-            <text x="20" y="490" font-family="IBM Plex Mono" font-size="8.5" fill="#ff5a5a">⚠ On failure:
-              rollbackToSavepoint → failureStrategy.onFailure → update(FAILED) → commit → throw</text>
+            <!-- Failure note -->
+            <rect x="10" y="475" width="1040" height="38" rx="4" fill="#ff5a5a08" stroke="#ff5a5a30" stroke-width="1" />
+            <text x="20" y="491" font-family="IBM Plex Mono" font-size="8.5" fill="#ff5a5a">⚠ Middleware/routing failure
+              (EXECUTION stage): failure strategies run via executeIndependent() → outer tx rolls back</text>
+            <text x="20" y="505" font-family="IBM Plex Mono" font-size="8.5" fill="#ff5a5a">⚠ Handler or post-processor
+              failure (POST_PROCESSING stage): rollbackToSavepoint → onFailure → update(FAILED) →
+              PipelineResult.failure() returned → tx commits → exception re-thrown via getOrThrow()</text>
           </svg>
         </div>
 
         <!-- STATE MACHINE -->
-        <div class="diagram-wrapper" style="margin-top:2rem">
+        <div class="diagram-wrapper reveal" style="margin-top:2rem">
           <div class="diagram-title">CommandStatus State Machine</div>
           <svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg"
             style="width:100%;max-width:760px;display:block">
             <defs>
               <marker id="sm-arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#4a9eff" />
+                <polygon points="0 0,8 3,0 6" fill="#4a9eff" />
               </marker>
               <marker id="sm-arrow-r" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#ff5a5a" />
+                <polygon points="0 0,8 3,0 6" fill="#ff5a5a" />
               </marker>
               <marker id="sm-arrow-g" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-                <polygon points="0 0, 8 3, 0 6" fill="#3dd68c" />
+                <polygon points="0 0,8 3,0 6" fill="#3dd68c" />
               </marker>
             </defs>
-
-            <!-- Initial dot -->
             <circle cx="30" cy="100" r="10" fill="#4a9eff" />
-
-            <!-- States -->
             <rect x="55" y="76" width="80" height="40" rx="20" fill="#1a2035" stroke="#a78bfa" stroke-width="1.5" />
             <text x="95" y="100" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#a78bfa"
               font-weight="600">INIT</text>
-
             <rect x="180" y="76" width="90" height="40" rx="20" fill="#1a2035" stroke="#4a9eff" stroke-width="1.5" />
             <text x="225" y="100" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#4a9eff"
               font-weight="600">PENDING</text>
-
             <rect x="320" y="76" width="115" height="40" rx="20" fill="#1a2035" stroke="#f0a940" stroke-width="1.5" />
             <text x="377" y="100" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#f0a940"
               font-weight="600">PROCESSING</text>
-
             <rect x="490" y="36" width="115" height="40" rx="20" fill="#1a2035" stroke="#3dd68c" stroke-width="1.5" />
             <text x="547" y="60" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#3dd68c"
               font-weight="600">COMPLETED</text>
-
             <rect x="490" y="120" width="95" height="40" rx="20" fill="#1a2035" stroke="#ff5a5a" stroke-width="1.5" />
             <text x="537" y="144" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="#ff5a5a"
               font-weight="600">FAILED</text>
-
-            <!-- Terminal states -->
             <circle cx="660" cy="56" r="14" fill="none" stroke="#3dd68c" stroke-width="1.5" />
             <circle cx="660" cy="56" r="9" fill="#3dd68c" />
             <circle cx="660" cy="140" r="14" fill="none" stroke="#ff5a5a" stroke-width="1.5" />
             <circle cx="660" cy="140" r="9" fill="#ff5a5a" />
-
-            <!-- Transitions -->
             <line x1="40" y1="100" x2="55" y2="100" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#sm-arrow)" />
             <line x1="135" y1="96" x2="180" y2="96" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#sm-arrow)" />
             <line x1="270" y1="96" x2="320" y2="96" stroke="#4a9eff" stroke-width="1.5" marker-end="url(#sm-arrow)" />
-
-            <!-- PROCESSING → COMPLETED -->
             <path d="M 435 80 Q 460 40 490 55" stroke="#3dd68c" stroke-width="1.5" fill="none"
               marker-end="url(#sm-arrow-g)" />
             <text x="460" y="38" font-family="IBM Plex Mono" font-size="8" fill="#3dd68c">success</text>
-
-            <!-- PROCESSING → FAILED -->
             <path d="M 435 120 Q 460 155 490 140" stroke="#ff5a5a" stroke-width="1.5" fill="none"
               marker-end="url(#sm-arrow-r)" />
             <text x="460" y="168" font-family="IBM Plex Mono" font-size="8" fill="#ff5a5a">failure</text>
-
-            <!-- COMPLETED → terminal -->
             <line x1="605" y1="56" x2="645" y2="56" stroke="#3dd68c" stroke-width="1.5" marker-end="url(#sm-arrow-g)" />
-            <!-- FAILED → terminal -->
             <line x1="585" y1="140" x2="645" y2="140" stroke="#ff5a5a" stroke-width="1.5"
               marker-end="url(#sm-arrow-r)" />
-
-            <!-- Labels on arrows -->
-            <text x="150" y="92" font-family="IBM Plex Mono" font-size="8" fill="#94a0bf">submit</text>
-            <text x="282" y="92" font-family="IBM Plex Mono" font-size="8" fill="#94a0bf">execute</text>
+            <text x="140" y="92" font-family="IBM Plex Mono" font-size="8" fill="#94a0bf">submit</text>
+            <text x="272" y="92" font-family="IBM Plex Mono" font-size="8" fill="#94a0bf">execute</text>
           </svg>
         </div>
-
       </section>
     </div>
   </div>
 
-  <!-- MATH FORMALISM -->
+  <!-- ══ MATH ══ -->
   <div id="math">
     <div class="wrapper">
       <section>
         <div class="section-label">Mathematical Formalism</div>
         <h2 class="section-title">Formal Command Pipeline Model</h2>
         <p class="section-desc">
-          CQRS models command execution as a functional pipeline <strong>\(\mathcal{P}\)</strong>,
-          where each stage \(s \in S\) is orchestrated through dynamically extensible interceptor chains.
-          The following definitions formalize the framework's behavior.
+          EOIW models command execution as a functional pipeline <strong>\(\mathcal{P}\)</strong>, where each stage \(s
+          \in S\) is orchestrated through dynamically extensible interceptor chains. The following definitions formalize
+          the framework's behavior.
         </p>
 
         <div class="grid-2">
           <div>
             <h2 class="sh">Core Domain Sets</h2>
-
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">Domain Definitions</div>
-              \[
-              \begin{aligned}
-              C &= \text{set of all Commands} \\
-              R &= \text{set of all Results} \\
-              E &= \text{set of all Exceptions} \\
-              H &= \text{set of all CommandHandlers} \\
-              \mathcal{S} &= \{s : s: \varnothing \to R \cup E\}\ (\text{Suppliers})
-              \end{aligned}
-              \]
+              \[\begin{aligned}C &= \text{set of all Commands}\\R &= \text{set of all Results}\\E &= \text{set of all
+              Exceptions}\\H &= \text{set of all CommandHandlers}\\\mathcal{S} &= \{s : s: \varnothing \to R \cup
+              E\}\quad(\text{Suppliers})\end{aligned}\]
             </div>
 
             <h2 class="sh">Core Pipeline Mappings</h2>
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">Transformation Functions</div>
-              \[
-              \begin{aligned}
-              \text{route} &: C \to H \\
-              \text{exec} &: C \to \mathcal{S} \\
-              \text{pre}_{m} &: C \to C \\
-              \text{post}_{p} &: C \times (R \cup \{\bot\}) \to R \cup \{\bot\}
-              \end{aligned}
-              \]
+              \[\begin{aligned}\text{route} &: C \to H\\\text{exec} &: C \to \mathcal{S}\\\text{pre}_{m} &: C \to
+              C\\\text{post}_{p} &: C \times (R \cup \{\bot\}) \to R \cup \{\bot\}\end{aligned}\]
             </div>
 
             <h2 class="sh">Problem Statement</h2>
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">Traditional Tight-Coupling (Anti-Pattern)</div>
-              \[
-              s_i = B(s_i) + O(s_i), \quad \forall i = 1, \dots, n
-              \]
-              <p style="font-size:.8rem;color:var(--text-secondary);margin-top:.75rem">
-                Where \(B(s_i)\) is business logic and \(O(s_i)\) are operational concerns — dangerously entangled.
-              </p>
+              \[s_i = B(s_i) + O(s_i), \quad \forall i = 1, \dots, n\]
+              <p style="font-size:.8rem;color:var(--text-secondary);margin-top:.75rem">Where \(B(s_i)\) is business
+                logic and \(O(s_i)\) are operational concerns — dangerously entangled.</p>
             </div>
 
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">EOIW Separation (Solution)</div>
-              \[
-              s_i = B(s_i), \quad I_i = O(s_i), \quad \forall i
-              \]
-              <p style="font-size:.8rem;color:var(--text-secondary);margin-top:.75rem">
-                Interceptor chain \(I_i\) handles operational concerns independently.
-              </p>
+              \[s_i = B(s_i), \quad I_i = O(s_i), \quad \forall i\]
+              <p style="font-size:.8rem;color:var(--text-secondary);margin-top:.75rem">Interceptor chain \(I_i\) handles
+                operational concerns independently.</p>
             </div>
           </div>
 
           <div>
             <h2 class="sh">Composed Pipeline Function</h2>
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">Pipeline Composition</div>
-              \[
-              \mathrm{pipeline} = \mathrm{wrapPost} \circ \mathrm{exec}
-              \]
-              \[
-              \mathrm{wrapPost}(s)() = \mathrm{finalize}\Big(
-              \text{fold}_{p \in P}\big(\mathrm{post}_p,\, \mathrm{tryExec}(s)\big)
-              \Big)
-              \]
+              \[\mathrm{pipeline} = \mathrm{wrapPost} \circ \mathrm{exec}\]
+              \[\mathrm{wrapPost}(s)() = \mathrm{finalize}\Big(\text{fold}_{p \in
+              P}\big(\mathrm{post}_p,\,\mathrm{tryExec}(s)\big)\Big)\]
             </div>
 
             <h2 class="sh">Execution Semantics</h2>
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">Handler Invocation Outcome</div>
-              \[
-              \mathrm{tryExec}(s) =
-              \begin{cases}
-              (s(), \bot) & \text{if handler succeeds}\\[6pt]
-              (\bot, e) & \text{if handler throws } e
-              \end{cases}
-              \]
+              \[\mathrm{tryExec}(s)=\begin{cases}(s(),\bot)&\text{if handler succeeds}\\[6pt](\bot,e)&\text{if handler
+              throws }e\end{cases}\]
             </div>
 
             <h2 class="sh">Temporal Property</h2>
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">Deterministic Ordering Guarantee</div>
-              \[
-              \forall c \in C,\, \exists! r \in R, e \in E:
-              \]
-              \[
-              \underbrace{\mathrm{pre}_{m_1} \circ \cdots \circ \mathrm{pre}_{m_n}}_{\text{middleware orchestration}}(c)
-              \;\to\;
-              \underbrace{\mathrm{exec}_h(c)}_{\text{handler}}
-              \;\to\;
-              \underbrace{\mathrm{post}_{p_1} \circ \cdots \circ \mathrm{post}_{p_m}}_{\text{post-processing}}(c,r,e)
-              \]
+              \[\forall c \in C,\,\exists! r \in R, e \in E:\]
+              \[\underbrace{\mathrm{pre}_{m_1}\circ\cdots\circ\mathrm{pre}_{m_n}}_{\text{middleware
+              orchestration}}(c)\;\to\;\underbrace{\mathrm{exec}_h(c)}_{\text{handler}}\;\to\;\underbrace{\mathrm{post}_{p_1}\circ\cdots\circ\mathrm{post}_{p_m}}_{\text{post-processing}}(c,r,e)\]
             </div>
 
             <h2 class="sh">Resilience Extension</h2>
-            <div class="math-block">
+            <div class="math-block reveal">
               <div class="math-label">Failure + Retry Semantics</div>
-              \[
-              \forall c \in C,\ \exists! p \in P :
-              \Big(\mathrm{exec}(c) \prec \mathrm{post}_p(c,r,e)\Big)
-              \ \lor\
-              \Big(\mathrm{fail}(c) \Rightarrow \Diamond\, \mathrm{retry}(c)\Big)
-              \]
+              \[\forall c \in C,\ \exists! p \in P:\Big(\mathrm{exec}(c)\prec\mathrm{post}_p(c,r,e)\Big)\ \lor\
+              \Big(\mathrm{fail}(c)\Rightarrow\Diamond\,\mathrm{retry}(c)\Big)\]
             </div>
           </div>
         </div>
-
       </section>
     </div>
   </div>
 
-  <!-- PIPELINE EXECUTION WALKTHROUGH -->
+  <!-- ══ PIPELINE ══ -->
   <div id="pipeline">
     <div class="wrapper">
       <section>
         <div class="section-label">Execution Model</div>
         <h2 class="section-title">Pipeline Lifecycle &amp; Transaction Strategy</h2>
         <p class="section-desc">
-          Each command traverses a structured five-phase lifecycle. Savepoints ensure business logic
-          rollbacks never erase audit records, while independent transactions guarantee failure states
-          persist even when outer transactions abort.
+          Each command traverses a structured five-phase lifecycle. Savepoints ensure business logic rollbacks never
+          erase audit records. Independent transactions guarantee failure states persist even when outer transactions
+          abort.
         </p>
 
         <div class="grid-2">
@@ -1791,10 +1845,10 @@
                 <div class="phase-content">
                   <div class="phase-title">Middleware Execution</div>
                   <div class="phase-desc">
-                    Command status is set to <ic>PROCESSING</ic>. All registered
-                    <ic>CommandMiddleware</ic> components are invoked in priority order.
-                    The default <ic>DefaultCommandPersistenceMiddleware</ic> saves the
-                    command record to the database.
+                    Command status is set to <ic>PROCESSING</ic> by <ic>DefaultSynchronousCommandExecutor</ic>. All
+                    registered <ic>CommandMiddleware</ic> instances are invoked sequentially in <ic>Ordered</ic>
+                    priority. The default <ic>DefaultCommandPersistenceMiddleware</ic> calls <ic>save(cmd, PROCESSING)
+                    </ic>.
                   </div>
                 </div>
               </div>
@@ -1806,9 +1860,9 @@
                 <div class="phase-content">
                   <div class="phase-title">Handler Resolution</div>
                   <div class="phase-desc">
-                    <ic>DefaultCommandRouter</ic> scans registered handlers via O(n) linear scan,
-                    calling <ic>matches(command)</ic> on each. The first matching handler is
-                    returned as a deferred <ic>Supplier&lt;RES&gt;</ic>.
+                    <ic>DefaultCommandRouter</ic> scans handlers via O(n) linear scan, calling <ic>matches(command)</ic>
+                    on each. Uses <ic>requestTypeToken().getRawType().isAssignableFrom()</ic> for type matching. The
+                    first match is returned as a deferred <ic>Supplier&lt;RES&gt;</ic>.
                   </div>
                 </div>
               </div>
@@ -1820,9 +1874,9 @@
                 <div class="phase-content">
                   <div class="phase-title">Savepoint Creation</div>
                   <div class="phase-desc">
-                    A JDBC savepoint <ic>"preHandlerSavepoint"</ic> is created. This checkpoint
-                    preserves all prior writes (including the PROCESSING record) and allows
-                    business logic to be rolled back independently.
+                    A JDBC savepoint <ic>"preHandlerSavepoint"</ic> is created by the <ic>JdbcCommandSavepointManager
+                    </ic>. This checkpoint preserves the PROCESSING record while isolating all subsequent business
+                    writes for potential rollback.
                   </div>
                 </div>
               </div>
@@ -1834,9 +1888,10 @@
                 <div class="phase-content">
                   <div class="phase-title">Handler + Post-Processing</div>
                   <div class="phase-desc">
-                    <ic>handler.handle(command)</ic> executes the business logic.
-                    On success, all <ic>CommandPostProcessor</ic> instances run sequentially.
-                    The default post-processor calls <ic>update(id, COMPLETED)</ic>.
+                    <ic>handlerSupplier.get()</ic> invokes the business logic. On success, all <ic>CommandPostProcessor
+                    </ic> instances run sequentially. The default <ic>DefaultCommandPostProcessor</ic> calls <ic>
+                      update(id, COMPLETED)</ic>. Both handler failures and post-processor failures are caught by the
+                    same block and use <ic>CommandFailureStage.POST_PROCESSING</ic>.
                   </div>
                 </div>
               </div>
@@ -1845,10 +1900,11 @@
                   <div class="phase-dot green">5</div>
                 </div>
                 <div class="phase-content" style="padding-bottom:0">
-                  <div class="phase-title">Commit &amp; Result Delivery</div>
+                  <div class="phase-title">Result Delivery</div>
                   <div class="phase-desc">
-                    Savepoint is released. Transaction commits. The <ic>PipelineResult.success(RES)</ic>
-                    value is extracted via <ic>getOrThrow()</ic> and returned to the caller.
+                    Savepoint is released. <ic>PipelineResult.success(RES)</ic> is returned. Transaction commits. <ic>
+                      getOrThrow()</ic> extracts the value. On failure the transaction also commits — with FAILED status
+                    — before re-throwing via <ic>getOrThrow()</ic>.
                   </div>
                 </div>
               </div>
@@ -1856,35 +1912,41 @@
           </div>
 
           <div>
-            <h3 class="sh">Failure Handling Strategy</h3>
+            <h3 class="sh">Failure Handling — Accurate Stage Mapping</h3>
 
-            <div class="callout warn">
+            <div class="callout warn reveal">
               <span class="callout-icon">⚡</span>
-              <div><strong>Execution Failure</strong> (middleware/routing): Handled in an <em>independent
-                  transaction</em> via <ic>executeIndependent()</ic>. This guarantees the FAILED state is persisted even
-                if the outer transaction rolls back entirely.</div>
+              <div><strong>EXECUTION Stage Failure</strong> (middleware or routing): Strategies that return <ic>true
+                </ic> from <ic>supports(EXECUTION)</ic> are invoked via <ic>executeIndependent()</ic> — a brand-new
+                transaction committed in isolation, ensuring the FAILED record persists even as the outer transaction
+                rolls back entirely.</div>
             </div>
 
-            <div class="callout danger">
+            <div class="callout danger reveal">
               <span class="callout-icon">↩</span>
-              <div><strong>Handler Failure</strong>: Rolls back to <ic>preHandlerSavepoint</ic>. Domain writes are
-                undone. Failure strategies run within the still-open transaction and update status to FAILED.
-                Transaction commits with FAILED state. Exception re-thrown <em>after</em> commit.</div>
+              <div><strong>POST_PROCESSING Stage Failure</strong> (handler <em>or</em> post-processor): Both failure
+                types are caught by the same try-catch block in <ic>DefaultCommandPipeline</ic> and both use <ic>
+                  CommandFailureStage.POST_PROCESSING</ic>. Rolls back to <ic>preHandlerSavepoint</ic>, domain writes
+                are undone, failure strategies run in the still-open transaction, then <ic>PipelineResult.failure()</ic>
+                is returned (not thrown) so the transaction commits with FAILED status before the exception is
+                re-thrown.</div>
             </div>
 
-            <div class="callout danger">
-              <span class="callout-icon">↩</span>
-              <div><strong>Post-Processing Failure</strong>: Same savepoint rollback path. <ic>
-                  CommandFailureStage.POST_PROCESSING</ic> strategies execute. Core business logic result is already
-                committed prior to savepoint — only post-processor writes are lost.</div>
-            </div>
-
-            <div class="callout info">
+            <div class="callout info reveal">
               <span class="callout-icon">💡</span>
-              <div><strong>Key Guarantee:</strong>
-                <ic>PipelineResult.failure()</ic> is <em>returned</em> (not thrown) inside the transaction block. This
-                forces the transaction to <strong>commit</strong> with FAILED status before the exception is re-thrown
-                via <ic>getOrThrow()</ic>.
+              <div><strong>Key Design:</strong>
+                <ic>PipelineResult.failure(wrapped)</ic> is <em>returned</em> inside the transaction, not thrown. This
+                forces the transaction to <strong>commit with FAILED status</strong> before <ic>getOrThrow()</ic>
+                re-throws the exception outside the transaction boundary.
+              </div>
+            </div>
+
+            <div class="callout warn reveal">
+              <span class="callout-icon">⚠️</span>
+              <div><strong>NoOpCommandTransactionManager Limitation:</strong>
+                <ic>executeIndependent()</ic> in <ic>NoOpCommandTransactionManager</ic> returns <ic>null</ic>
+                <em>without executing the action</em>. This means EXECUTION-stage failure strategies are silently
+                skipped when using the NoOp manager. Use <ic>JdbcCommandTransactionManager</ic> in production.
               </div>
             </div>
 
@@ -1894,520 +1956,487 @@
                 <thead>
                   <tr>
                     <th>Mode</th>
-                    <th>Description</th>
+                    <th>Executor</th>
                     <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
                     <td>SYNC</td>
-                    <td>Synchronous, blocking execution in calling thread</td>
-                    <td style="color:var(--accent-green);font-family:var(--mono);font-size:.8rem">Implemented</td>
+                    <td>DefaultSynchronousCommandExecutor — blocking, sequential</td>
+                    <td style="color:var(--accent-green);font-family:'IBM Plex Mono',monospace;font-size:.8rem">✓
+                      Implemented</td>
                   </tr>
                   <tr>
                     <td>ASYNC</td>
-                    <td>Asynchronous thread-pool based execution</td>
-                    <td style="color:var(--accent-amber);font-family:var(--mono);font-size:.8rem">Planned</td>
+                    <td>Falls through to DefaultSynchronousCommandExecutor (switch case)</td>
+                    <td style="color:var(--accent-amber);font-family:'IBM Plex Mono',monospace;font-size:.8rem">⟳
+                      Planned</td>
                   </tr>
                   <tr>
                     <td>DISRUPTOR</td>
-                    <td>Ring-buffer for ultra-high throughput</td>
-                    <td style="color:var(--accent-amber);font-family:var(--mono);font-size:.8rem">Planned</td>
+                    <td>Falls through to DefaultSynchronousCommandExecutor (switch case)</td>
+                    <td style="color:var(--accent-amber);font-family:'IBM Plex Mono',monospace;font-size:.8rem">⟳
+                      Planned</td>
                   </tr>
                 </tbody>
               </table>
             </div>
+
+            <h3 class="sh">CommandModuleBuilder — Default Application Rules</h3>
+            <div class="callout info reveal">
+              <span class="callout-icon">ℹ️</span>
+              <div>Defaults are applied by <ic>applyDefaultsIfNeeded()</ic> only when <ic>commandStore != null</ic>
+                <strong>and</strong> each respective list is empty. Providing any custom middleware, post-processor, or
+                failure strategy suppresses the corresponding default entirely.
+              </div>
+            </div>
           </div>
         </div>
-
       </section>
     </div>
   </div>
 
-  <!-- COMPONENTS -->
+  <!-- ══ COMPONENTS ══ -->
   <div id="components">
     <div class="wrapper">
       <section>
         <div class="section-label">Core Abstractions</div>
         <h2 class="section-title">Component Reference</h2>
-        <p class="section-desc">
-          Every component is designed around a single, well-defined responsibility.
-          Override or compose these interfaces to customize the framework's behavior.
-        </p>
+        <p class="section-desc">Every component is designed around a single, well-defined responsibility. Override or
+          compose these interfaces to customize the framework's behavior without touching the pipeline core.</p>
 
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem">
-
-          <div class="component-card">
+          <div class="component-card reveal">
             <div class="comp-type interface">interface</div>
             <div class="comp-icon">CH</div>
             <div class="comp-title">CommandHandler&lt;REQ, RES&gt;</div>
-            <div class="comp-desc">Core processing unit. Receives a <ic>Command&lt;REQ&gt;</ic>, executes domain logic,
-              returns <ic>RES</ic>. The <ic>matches()</ic> default uses TypeToken raw-type assignability.</div>
+            <div class="comp-desc">Core processing unit. Receives <ic>Command&lt;REQ&gt;</ic>, executes domain logic,
+              returns <ic>RES</ic>. Default <ic>matches()</ic> uses <ic>
+                requestTypeToken().getRawType().isAssig...</ic> — raw type check only.</div>
           </div>
 
-          <div class="component-card amber">
+          <div class="component-card amber reveal">
             <div class="comp-type abstract">abstract class</div>
             <div class="comp-icon amber">AC</div>
             <div class="comp-title">AbstractCommandHandler&lt;REQ, RES&gt;</div>
-            <div class="comp-desc">Captures generic type parameters at runtime via Guava <ic>TypeToken</ic>, solving
-              Java's type-erasure. Extend this instead of implementing the interface directly.</div>
+            <div class="comp-desc">Captures <ic>REQ</ic> and <ic>RES</ic> generic types at construction time via Guava
+              <ic>TypeToken</ic>, solving Java's type-erasure. Extend this rather than implementing <ic>CommandHandler
+              </ic> directly.
+            </div>
           </div>
 
-          <div class="component-card">
+          <div class="component-card reveal">
             <div class="comp-type interface">interface</div>
             <div class="comp-icon">CP</div>
             <div class="comp-title">CommandPipeline</div>
-            <div class="comp-desc">Entry point. <ic>send(command)</ic> returns a lazy <ic>Supplier&lt;RES&gt;</ic>.
-              Execution is deferred until <ic>.get()</ic> is called, enabling composition with transactions and async
-              wrappers.</div>
+            <div class="comp-desc">
+              <ic>send(command)</ic> returns a lazy <ic>Supplier&lt;RES&gt;</ic>. Execution is deferred until <ic>.get()
+              </ic> is called, enabling composition with async wrappers, retries, or monitoring at the call site.
+            </div>
           </div>
 
-          <div class="component-card green">
+          <div class="component-card green reveal">
             <div class="comp-type interface">interface</div>
             <div class="comp-icon green">CM</div>
             <div class="comp-title">CommandMiddleware</div>
-            <div class="comp-desc">Pre-execution hook. Invoked sequentially before handler resolution. Used for logging,
-              validation, persistence, metadata enrichment, and security. Sorted via <ic>Ordered</ic> interface.</div>
+            <div class="comp-desc">Pre-execution hook invoked sequentially before handler resolution. Used for logging,
+              validation, persistence, metadata enrichment. Implement <ic>Ordered</ic> to control position in the chain.
+            </div>
           </div>
 
-          <div class="component-card purple">
-            <div class="comp-type interface">interface</div>
+          <div class="component-card purple reveal">
+            <div class="comp-type interface">@FunctionalInterface</div>
             <div class="comp-icon purple">PP</div>
             <div class="comp-title">CommandPostProcessor&lt;T&gt;</div>
-            <div class="comp-desc">Post-execution hook. Runs after successful handler completion. Functional interface —
-              supports lambdas. Default implementation updates status to <ic>COMPLETED</ic>.</div>
+            <div class="comp-desc">Post-execution hook. Runs after successful handler completion. Failures here are
+              caught by the same catch block as handler failures and use <ic>CommandFailureStage.POST_PROCESSING</ic>.
+            </div>
           </div>
 
-          <div class="component-card red">
+          <div class="component-card red reveal">
             <div class="comp-type interface">interface</div>
             <div class="comp-icon red">FS</div>
             <div class="comp-title">CommandFailureStrategy</div>
             <div class="comp-desc">
-              <ic>supports(stage)</ic> filters strategies by <ic>CommandFailureStage</ic>. <ic>onFailure(cmd, t)</ic>
-              reacts. Multiple strategies per pipeline. Default implementations update status to FAILED.
+              <ic>supports(stage)</ic> filters strategies by <ic>CommandFailureStage</ic>. <ic>EXECUTION</ic> strategies
+              run via <ic>executeIndependent()</ic>; <ic>POST_PROCESSING</ic> strategies run within the same open
+              transaction.
             </div>
           </div>
 
-          <div class="component-card">
+          <div class="component-card reveal">
             <div class="comp-type interface">interface</div>
             <div class="comp-icon">CS</div>
             <div class="comp-title">CommandStore</div>
-            <div class="comp-desc">Persistence abstraction. <ic>save(cmd, status)</ic> creates records, <ic>update(id,
-                status)</ic> and <ic>update(id, status, throwable)</ic> track lifecycle transitions.</div>
+            <div class="comp-desc">Persistence abstraction. <ic>save(cmd, status)</ic> creates records. <ic>update(id,
+                status)</ic> and <ic>update(id, status, throwable)</ic> track lifecycle transitions. <ic>
+                DefaultCommandService</ic> manages its own JDBC transactions per operation.</div>
           </div>
 
-          <div class="component-card amber">
+          <div class="component-card amber reveal">
             <div class="comp-type interface">interface</div>
             <div class="comp-icon amber">TX</div>
             <div class="comp-title">CommandTransactionManager</div>
             <div class="comp-desc">
-              <ic>execute()</ic> joins existing or starts new transactions. <ic>executeIndependent()</ic> always creates
-              a fresh transaction — critical for durable failure state writes.
+              <ic>execute()</ic> joins existing or starts new transactions via <ic>JdbcConnectionHolder</ic>
+              ThreadLocal. <ic>executeIndependent()</ic> always creates a fresh connection — critical for durable
+              failure state writes independent of outer tx outcome.
             </div>
           </div>
 
-          <div class="component-card green">
+          <div class="component-card green reveal">
             <div class="comp-type enum">sealed interface</div>
             <div class="comp-icon green">PR</div>
             <div class="comp-title">PipelineResult&lt;T&gt;</div>
             <div class="comp-desc">Sealed type with <ic>Success&lt;T&gt;</ic> and <ic>Failure&lt;T&gt;</ic> records.
-              <ic>getOrThrow()</ic> extracts value or re-throws. Enables transaction-commit-before-throw pattern.
+              <ic>getOrThrow()</ic> uses a switch expression. Enables the commit-before-throw pattern by returning
+              failures instead of throwing within the tx boundary.
             </div>
           </div>
-
         </div>
-
       </section>
     </div>
   </div>
 
-  <!-- USAGE GUIDE -->
+  <!-- ══ USAGE GUIDE ══ -->
   <div id="usage">
     <div class="wrapper">
       <section>
         <div class="section-label">Integration Guide</div>
         <h2 class="section-title">Using the Framework</h2>
-        <p class="section-desc">
-          A complete walkthrough of integrating CQRS into a Spring Boot application — from defining
-          command types to wiring the pipeline and handling HTTP requests.
+        <p class="section-desc">A complete walkthrough — from database schema to HTTP request handling in Spring Boot.
         </p>
 
         <div class="tabs">
           <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab(event,'t1')">1. Database Schema</button>
+            <button class="tab-btn active" onclick="switchTab(event,'t1')">1. DB Schema</button>
             <button class="tab-btn" onclick="switchTab(event,'t2')">2. Correlation Filter</button>
-            <button class="tab-btn" onclick="switchTab(event,'t3')">3. Springboot Configuration</button>
-            <button class="tab-btn" onclick="switchTab(event,'t4')">4. Request Object</button>
-            <button class="tab-btn" onclick="switchTab(event,'t5')">4.1. Response Object</button>
-            <button class="tab-btn" onclick="switchTab(event,'t6')">5. Command Creation</button>
-            <button class="tab-btn" onclick="switchTab(event,'t7')">6. Command Handler Creation</button>
-            <button class="tab-btn" onclick="switchTab(event,'t8')">7. Post-Processor Creation</button>
-            <button class="tab-btn" onclick="switchTab(event,'t9')">8. API Usage of Command</button>
+            <button class="tab-btn" onclick="switchTab(event,'t3')">3. Spring Config</button>
+            <button class="tab-btn" onclick="switchTab(event,'t4')">4. Request/Response</button>
+            <button class="tab-btn" onclick="switchTab(event,'t5')">5. Command Object</button>
+            <button class="tab-btn" onclick="switchTab(event,'t6')">6. Command Handler</button>
+            <button class="tab-btn" onclick="switchTab(event,'t7')">7. Post-Processor</button>
+            <button class="tab-btn" onclick="switchTab(event,'t8')">8. API Controller</button>
           </div>
 
-          <!-- TAB 1: Database -->
+          <!-- TAB 1 -->
           <div id="t1" class="tab-panel active">
-            <h3 class="sh">Step 1 — Create the Database Schema - (Resources Directory)</h3>
-            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">
-              First, create your database schema, make sure that the application is able to
-              communicate with the database. The example command schema is attached inside the resources
-              directory.
-            </p>
+            <h3 class="sh">Step 1 — Create the Database Schema</h3>
+            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">The composite
+              unique constraint on <ic>(idempotency_key, correlation_id)</ic> enforces idempotency at the database
+              level.</p>
             <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">sql · cqrs_master.sql</span>
+              <div class="code-header"><span class="code-lang">sql · schema.sql</span>
                 <div class="code-dots"><span></span><span></span><span></span></div>
               </div>
-              <pre>
-              <span class="kw">CREATE TABLE</span> <span class="cl">cqrs_master</span> (
-              <span class="cl">id</span>              <span class="kw">UUID</span> <span class="kw">PRIMARY KEY</span>,
-              <span class="cl">idempotency_key</span> <span class="kw">VARCHAR</span>(<span class="nu">64</span>),
-              <span class="cl">status</span>          <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
-              <span class="cl">tenant_id</span>       <span class="kw">VARCHAR</span>(<span class="nu">64</span>),
-              <span class="cl">username</span>        <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
-              <span class="cl">request_url</span>     <span class="kw">TEXT</span>,
-              <span class="cl">class_name</span>      <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
-              <span class="cl">api_version</span>     <span class="kw">VARCHAR</span>(<span class="nu">32</span>),
-              <span class="cl">correlation_id</span>  <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
-              <span class="cl">error</span>           <span class="kw">TEXT</span>,
-              <span class="cl">payload</span>         <span class="kw">TEXT</span>,
-              <span class="cl">created_at</span>      <span class="kw">TIMESTAMPTZ</span> <span class="kw">DEFAULT</span> <span class="kw">CURRENT_TIMESTAMP</span>,
-              <span class="cl">updated_at</span>      <span class="kw">TIMESTAMPTZ</span> <span class="kw">DEFAULT</span> <span class="kw">CURRENT_TIMESTAMP</span>,
+              <pre><span class="kw">CREATE TABLE</span> <span class="cl">public.cqrs_master</span> (
+  <span class="cl">id</span>              <span class="kw">UUID PRIMARY KEY</span>,
+  <span class="cl">idempotency_key</span> <span class="kw">VARCHAR</span>(<span class="nu">64</span>),
+  <span class="cl">status</span>          <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
+  <span class="cl">tenant_id</span>       <span class="kw">VARCHAR</span>(<span class="nu">64</span>),
+  <span class="cl">username</span>        <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
+  <span class="cl">request_url</span>     <span class="kw">TEXT</span>,
+  <span class="cl">class_name</span>      <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
+  <span class="cl">api_version</span>     <span class="kw">VARCHAR</span>(<span class="nu">32</span>),
+  <span class="cl">correlation_id</span>  <span class="kw">VARCHAR</span>(<span class="nu">255</span>),
+  <span class="cl">error</span>           <span class="kw">TEXT</span>,
+  <span class="cl">payload</span>         <span class="kw">TEXT</span>,          <span class="cm">-- JSON with @class metadata for polymorphic deserialization</span>
+  <span class="cl">created_at</span>      <span class="kw">TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP</span>,
+  <span class="cl">updated_at</span>      <span class="kw">TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP</span>,
 
-              <span class="kw">CONSTRAINT</span> <span class="cl">chk_idempotency_key_correlation_id</span>
-                  <span class="kw">UNIQUE</span>(<span class="cl">idempotency_key</span>, <span class="cl">correlation_id</span>),
+  <span class="kw">CONSTRAINT</span> <span class="cl">chk_idempotency_key_correlation_id</span>
+      <span class="kw">UNIQUE</span>(<span class="cl">idempotency_key</span>, <span class="cl">correlation_id</span>),
 
-              <span class="kw">CONSTRAINT</span> <span class="cl">chk_status</span>
-                  <span class="kw">CHECK</span> (
-                      <span class="cl">status</span> <span class="kw">IN</span> (<span class="st">'INIT'</span>, <span class="st">'PENDING'</span>, <span class="st">'PROCESSING'</span>, <span class="st">'COMPLETED'</span>, <span class="st">'FAILED'</span>)
-                  )
-          );
-            </pre>
+  <span class="kw">CONSTRAINT</span> <span class="cl">chk_status</span>
+      <span class="kw">CHECK</span>(status <span class="kw">IN</span> (<span class="st">'INIT'</span>, <span class="st">'PENDING'</span>, <span class="st">'PROCESSING'</span>, <span class="st">'COMPLETED'</span>, <span class="st">'FAILED'</span>))
+);</pre>
             </div>
+            <div class="callout info">
+              <span class="callout-icon">💡</span>
+              <div>The <ic>payload</ic> column stores JSON produced by <ic>CommandJsonMapper</ic>, which embeds a <ic>
+                  @class</ic> field containing the fully qualified class name for polymorphic reconstruction.</div>
+            </div>
+          </div>
 
+          <!-- TAB 2 -->
+          <div id="t2" class="tab-panel">
+            <h3 class="sh">Step 2 — Correlation ID Filter</h3>
+            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">Generates and
+              attaches a <ic>correlationId</ic> to every request as a request attribute. Extends <ic>
+                OncePerRequestFilter</ic> to run exactly once per request.</p>
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">java · CommandCorrelationFilter.java</span>
+                <div class="code-dots"><span></span><span></span><span></span></div>
+              </div>
+              <pre><span class="an">@Slf4j @Component</span>
+<span class="kw">public class</span> <span class="cl">CommandCorrelationFilter</span> <span class="kw">extends</span> <span class="cl">OncePerRequestFilter</span> {
+
+  <span class="an">@Override</span>
+  <span class="kw">protected void</span> <span class="fn">doFilterInternal</span>(
+      <span class="kw">final</span> <span class="cl">HttpServletRequest</span> request,
+      <span class="kw">final</span> <span class="cl">HttpServletResponse</span> response,
+      <span class="kw">final</span> <span class="cl">FilterChain</span> filterChain) <span class="kw">throws</span> <span class="cl">ServletException</span>, <span class="cl">IOException</span> {
+
+    request.setAttribute(
+        <span class="cl">CommandConstants</span>.COMMAND_CORRELATION_ID_HEADER,
+        <span class="cl">UUID</span>.randomUUID().toString()
+    );
+    log.info(<span class="st">"Correlation id: {}"</span>,
+        request.getAttribute(<span class="cl">CommandConstants</span>.COMMAND_CORRELATION_ID_HEADER));
+    log.info(<span class="st">"Idempotency id: {}"</span>,
+        request.getHeader(<span class="cl">CommandConstants</span>.COMMAND_IDEMPOTENCY_HEADER));
+
+    filterChain.doFilter(request, response);
+  }
+}</pre>
+            </div>
+          </div>
+
+          <!-- TAB 3 -->
+          <div id="t3" class="tab-panel">
+            <h3 class="sh">Step 3 — Spring Boot Configuration</h3>
+            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">All beans use
+              <ic>@ConditionalOnMissingBean</ic> — override any bean in your own <ic>@Configuration</ic> to customize
+              behaviour without modifying the framework.
+            </p>
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">java · CqrsConfigModuleV1.java</span>
+                <div class="code-dots"><span></span><span></span><span></span></div>
+              </div>
+              <pre><span class="an">@Configuration</span>
+<span class="kw">public class</span> <span class="cl">CqrsConfigModuleV1</span> {
+
+  <span class="an">@Bean @ConditionalOnMissingBean</span>
+  <span class="kw">public</span> <span class="cl">ObjectMapper</span> <span class="fn">objectMapper</span>() {
+    <span class="kw">return new</span> <span class="cl">ObjectMapper</span>().findAndRegisterModules();
+  }
+
+  <span class="an">@Bean @ConditionalOnMissingBean</span>
+  <span class="kw">public</span> <span class="cl">CommandJsonMapper</span> <span class="fn">commandJsonMapper</span>(<span class="kw">final</span> <span class="cl">ObjectMapper</span> objectMapper) {
+    <span class="kw">return new</span> <span class="cl">CommandJsonMapper</span>(objectMapper);
+  }
+
+  <span class="an">@Bean @ConditionalOnMissingBean</span>
+  <span class="kw">public</span> <span class="cl">CommandTransactionManager</span> <span class="fn">commandTransactionManager</span>(<span class="kw">final</span> <span class="cl">DataSource</span> ds) {
+    <span class="kw">return new</span> <span class="cl">JdbcCommandTransactionManager</span>(ds);
+  }
+
+  <span class="an">@Bean @ConditionalOnMissingBean</span>
+  <span class="kw">public</span> <span class="cl">CommandStore</span> <span class="fn">commandStore</span>(
+      <span class="kw">final</span> <span class="cl">CommandJsonMapper</span> mapper, <span class="kw">final</span> <span class="cl">DataSource</span> ds) {
+    <span class="kw">return new</span> <span class="cl">DefaultCommandService</span>(mapper, ds);
+  }
+
+  <span class="an">@Bean @ConditionalOnMissingBean</span>
+  <span class="kw">public</span> <span class="cl">CommandModule</span> <span class="fn">commandModule</span>(
+      <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandHandler</span>&lt;?,?&gt;&gt; handlers,
+      <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandMiddleware</span>&gt; middlewares,
+      <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandPostProcessor</span>&lt;?&gt;&gt; postProcessors,
+      <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandFailureStrategy</span>&gt; failureStrategies,
+      <span class="kw">final</span> <span class="cl">CommandStore</span> commandStore,
+      <span class="kw">final</span> <span class="cl">CommandTransactionManager</span> txManager) {
+
+    <span class="kw">return</span> <span class="cl">CommandModuleBuilder</span>.create()
+        .handlers(handlers)
+        .middlewares(middlewares)         <span class="cm">// empty list → DefaultCommandPersistenceMiddleware applied</span>
+        .postProcessors(postProcessors)   <span class="cm">// empty list → DefaultCommandPostProcessor applied</span>
+        .failureStrategies(failureStrategies) <span class="cm">// empty list → both defaults applied</span>
+        .commandStore(commandStore)
+        .transactionManager(txManager)
+        .build();
+  }
+
+  <span class="an">@Bean @ConditionalOnMissingBean</span>
+  <span class="kw">public</span> <span class="cl">CommandPipeline</span> <span class="fn">commandPipeline</span>(<span class="kw">final</span> <span class="cl">CommandModule</span> module) {
+    <span class="kw">return</span> module.getPipeline();
+  }
+}</pre>
+            </div>
+          </div>
+
+          <!-- TAB 4 -->
+          <div id="t4" class="tab-panel">
+            <h3 class="sh">Step 4 — Request and Response Objects</h3>
+            <div class="callout warn">
+              <span class="callout-icon">⚠️</span>
+              <div>Do <strong>not</strong> use raw Java collection types (<ic>List&lt;?&gt;</ic>, <ic>Map&lt;?,?&gt;
+                </ic>) as your payload type. <ic>CommandJsonMapper</ic> embeds a <ic>@class</ic> field and uses <ic>
+                  Class.forName()</ic> for reconstruction — concrete, named classes are required.</div>
+            </div>
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">java · UserMasterRequest.java +
+                  UserMasterResponse.java</span>
+                <div class="code-dots"><span></span><span></span><span></span></div>
+              </div>
+              <pre><span class="cm">// Request DTO — your command's business payload</span>
+<span class="an">@Getter @Setter @NoArgsConstructor</span>
+<span class="kw">public class</span> <span class="cl">UserMasterRequest</span> {
+  <span class="kw">private</span> <span class="cl">String</span> username;
+  <span class="kw">private</span> <span class="cl">String</span> email;
+  <span class="kw">private</span> <span class="cl">String</span> firstName;
+  <span class="kw">private</span> <span class="cl">String</span> lastName;
+  <span class="kw">private int</span>    age;
+}
+
+<span class="cm">// Response DTO — returned after handler execution</span>
+<span class="an">@Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor</span>
+<span class="kw">public class</span> <span class="cl">UserMasterResponse</span> {
+  <span class="kw">private</span> <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">String</span>&gt; response;
+}</pre>
+            </div>
+          </div>
+
+          <!-- TAB 5 -->
+          <div id="t5" class="tab-panel">
+            <h3 class="sh">Step 5 — Extend Your Command Object</h3>
             <div class="callout info">
               <span class="callout-icon">💡</span>
               <div>Keep your <ic>Command</ic> subclass thin — it is a carrier, not a handler. All business logic belongs
-                in the handler. The command's metadata fields (correlationId, tenantId, etc.) are inherited from <ic>
+                in the handler. Metadata fields (correlationId, tenantId, idempotencyKey, etc.) are inherited from <ic>
                   Command&lt;T&gt;</ic>.</div>
             </div>
-          </div>
-
-          <!-- TAB 2: Filter -->
-          <div id="t2" class="tab-panel">
-            <h3 class="sh">Step 2 — Extend OncePerRequestFilter for correlationId</h3>
-            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">
-              The correlationId can serve as a foreign key to the payload for traceability.
-            </p>
             <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · CommandCorrelationFilter.java</span>
-                <div class="code-dots"><span></span><span></span><span></span></div>
-              </div>
-              <pre><span class="kw">package</span> org.example.filter;
-
-          <span class="an">@Slf4j @Component</span>
-          <span class="kw">public class</span> <span class="cl">CommandCorrelationFilter</span> 
-            <span class="kw">extends</span> <span class="cl">OncePerRequestFilter</span> {
-
-            <span class="an">@Override</span>
-            <span class="kw">protected void</span> <span class="cl">doFilterInternal</span>(
-                <span class="cl">HttpServletRequest</span> request, 
-                <span class="cl">HttpServletResponse</span> response, 
-                <span class="cl">FilterChain</span> filterChain) 
-                <span class="kw">throws</span> <span class="cl">ServletException</span>, <span class="cl">IOException</span> {
-
-                request.setAttribute(
-                    <span class="cl">CommandConstants</span>.COMMAND_CORRELATION_ID_HEADER, 
-                    <span class="cl">UUID</span>.randomUUID().toString()
-                );
-
-                log.info(<span class="st">"Correlation id: {}"</span>, 
-                    request.getAttribute(<span class="cl">CommandConstants</span>.COMMAND_CORRELATION_ID_HEADER));
-
-                log.info(<span class="st">"Idempotency id: {}"</span>, 
-                    request.getAttribute(<span class="cl">CommandConstants</span>.COMMAND_IDEMPOTENCY_HEADER));
-
-                filterChain.doFilter(request, response);
-            }
-        }</pre>
-            </div>
-          </div>
-
-          <!-- TAB 3: Configuration -->
-          <div id="t3" class="tab-panel">
-            <h3 class="sh">Step 3 — Springboot Configuration for the creation of Spring bean</h3>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · CqrsConfigModuleV1.java</span>
-                <div class="code-dots"><span></span><span></span><span></span></div>
-              </div>
-              <pre>
-        <span class="an">@Configuration</span>
-        <span class="kw">public class</span> <span class="cl">CqrsConfigModuleV1</span> {
-
-          <span class="an">@Bean</span>
-          <span class="an">@ConditionalOnMissingBean</span>
-          <span class="kw">public</span> <span class="cl">ObjectMapper</span> <span class="fn">objectMapper</span>() {
-            <span class="kw">return</span> <span class="kw">new</span> <span class="cl">ObjectMapper</span>().findAndRegisterModules();
-          }
-
-          <span class="an">@Bean</span>
-          <span class="an">@ConditionalOnMissingBean</span>
-          <span class="kw">public</span> <span class="cl">CommandJsonMapper</span> <span class="fn">commandJsonMapper</span>(
-              <span class="kw">final</span> <span class="cl">ObjectMapper</span> objectMapper) {
-            <span class="kw">return</span> <span class="kw">new</span> <span class="cl">CommandJsonMapper</span>(objectMapper);
-          }
-
-          <span class="an">@Bean</span>
-          <span class="an">@ConditionalOnMissingBean</span>
-          <span class="kw">public</span> <span class="cl">CommandTransactionManager</span> <span class="fn">commandTransactionManager</span>(
-              <span class="kw">final</span> <span class="cl">DataSource</span> dataSource) {
-            <span class="kw">return</span> <span class="kw">new</span> <span class="cl">JdbcCommandTransactionManager</span>(dataSource);
-          }
-
-          <span class="an">@Bean</span>
-          <span class="an">@ConditionalOnMissingBean</span>
-          <span class="kw">public</span> <span class="cl">CommandStore</span> <span class="fn">commandStore</span>(
-              <span class="kw">final</span> <span class="cl">CommandJsonMapper</span> commandJsonMapper,
-              <span class="kw">final</span> <span class="cl">DataSource</span> dataSource) {
-            <span class="kw">return</span> <span class="kw">new</span> <span class="cl">DefaultCommandService</span>(commandJsonMapper, dataSource);
-          }
-
-          <span class="an">@Bean</span>
-          <span class="an">@ConditionalOnMissingBean</span>
-          <span class="kw">public</span> <span class="cl">CommandModule</span> <span class="fn">commandModule</span>(
-              <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandHandler</span>&lt;?,?&gt;&gt; handlers,
-              <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandMiddleware</span>&gt; middlewares,
-              <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandPostProcessor</span>&lt;?&gt;&gt; postProcessors,
-              <span class="kw">final</span> <span class="cl">List</span>&lt;<span class="cl">CommandFailureStrategy</span>&gt; failureStrategies,
-              <span class="kw">final</span> <span class="cl">CommandStore</span> commandStore,
-              <span class="kw">final</span> <span class="cl">CommandTransactionManager</span> commandTransactionManager) {
-
-            <span class="kw">return</span> <span class="cl">CommandModuleBuilder</span>.create()
-                .handlers(handlers)
-                .middlewares(middlewares)
-                .postProcessors(postProcessors)
-                .failureStrategies(failureStrategies)
-                .commandStore(commandStore)
-                .transactionManager(commandTransactionManager)
-                .build();
-          }
-
-          <span class="an">@Bean</span>
-          <span class="an">@ConditionalOnMissingBean</span>
-          <span class="kw">public</span> <span class="cl">CommandPipeline</span> <span class="fn">commandPipeline</span>(
-              <span class="kw">final</span> <span class="cl">CommandModule</span> commandModule) {
-            <span class="kw">return</span> commandModule.getPipeline();
-          }
-        }
-          </pre>
-            </div>
-          </div>
-
-          <!-- TAB 4: Request -->
-          <div id="t4" class="tab-panel">
-            <h3 class="sh">Step 4 — Define Your Payload Request Object</h3>
-            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">
-              Note: That creation of request and response objects are mandatory
-              as the pipeline orchestration will not work with Java and Spring defined
-              type e.g. List
-              <?>, Map<?,?> etc.
-            </p>
-
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · UserMasterRequest.java</span>
-                <div class="code-dots"><span></span><span></span><span></span></div>
-              </div>
-              <pre><span class="cm">// Domain request DTO — your command's business payload</span>
-            <span class="an">@Getter @Setter @NoArgsConstructor</span>
-            <span class="kw">public class</span> <span class="cl">UserMasterRequest</span>(
-                <span class="cl">String</span> username,
-                <span class="cl">String</span> email,
-                <span class="cl">String</span> firstName,
-                <span class="cl">String</span> lastName,
-                <span class="nu">int</span> age
-            ) {}</pre>
-            </div>
-          </div>
-
-          <!-- TAB 5: Response -->
-          <div id="t5" class="tab-panel">
-            <h3 class="sh">Step 4.1 — Define Your Payload Response Object</h3>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · UserMasterResponse.java</span>
-                <div class="code-dots"><span></span><span></span><span></span></div>
-              </div>
-              <pre><span class="cm">// Domain response DTO — returned after handler execution</span>
-            <span class="an">@Getter @Setter @NoArgsConstructor</span>
-            <span class="kw">public class</span> <span class="cl">UserMasterResponse</span> {
-                <span class="kw">private</span> <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">String</span>&gt; response;
-                <span class="cm">// getters, builder via Lombok @Builder</span>
-            }</pre>
-            </div>
-          </div>
-
-          <!-- TAB 6: Command -->
-          <div id="t6" class="tab-panel">
-            <h3 class="sh">Step 5 — Extend Your Command Object</h3>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · UserCommand.java</span>
+              <div class="code-header"><span class="code-lang">java · UserCommand.java</span>
                 <div class="code-dots"><span></span><span></span><span></span></div>
               </div>
               <pre><span class="kw">package</span> org.example.command;
-            <span class="an">@Getter @Setter @NoArgsConstructor</span>
-            <span class="kw">public class</span> <span class="cl">UserCommand</span> <span class="kw">extends</span> <span class="cl">Command</span>&lt;<span class="cl">UserMasterRequest</span>&gt; {
-                <span class="an">@Serial</span>
-                <span class="kw">private static final long</span> serialVersionUID = <span class="nu">1L</span>;
-                <span class="cm">// Add any domain-specific fields here if needed</span>
-                <span class="cm">// e.g. private String sourceSystem;</span>
-            }</pre>
+
+<span class="an">@Getter @Setter @NoArgsConstructor</span>
+<span class="kw">public class</span> <span class="cl">UserCommand</span> <span class="kw">extends</span> <span class="cl">Command</span>&lt;<span class="cl">UserMasterRequest</span>&gt; {
+
+  <span class="an">@Serial</span>
+  <span class="kw">private static final long</span> serialVersionUID = <span class="nu">1L</span>;
+
+  <span class="cm">// Add domain-specific fields here if needed</span>
+  <span class="cm">// e.g. private String sourceSystem;</span>
+}</pre>
             </div>
           </div>
 
-          <!-- TAB 7: Command Handler -->
+          <!-- TAB 6 -->
+          <div id="t6" class="tab-panel">
+            <h3 class="sh">Step 6 — Command Handler</h3>
+            <div class="callout danger">
+              <span class="callout-icon">🚫</span>
+              <div>Do <strong>not</strong> use Spring's <ic>@Transactional</ic> on handlers. Transactions are
+                programmatically managed inside <ic>DefaultCommandPipeline</ic> via <ic>JdbcCommandTransactionManager
+                </ic>. Mixing declarative and programmatic tx management will cause conflicts.</div>
+            </div>
+            <div class="code-block">
+              <div class="code-header"><span class="code-lang">java · UserCommandHandler.java</span>
+                <div class="code-dots"><span></span><span></span><span></span></div>
+              </div>
+              <pre><span class="an">@RequiredArgsConstructor @Component</span>
+<span class="kw">public class</span> <span class="cl">UserCommandHandler</span>
+    <span class="kw">extends</span> <span class="cl">AbstractCommandHandler</span>&lt;<span class="cl">UserMasterRequest</span>, <span class="cl">UserMasterResponse</span>&gt; {
+
+  <span class="kw">private final</span> <span class="cl">UserMasterService</span> service;
+
+  <span class="an">@Override</span>
+  <span class="kw">public</span> <span class="cl">UserMasterResponse</span> <span class="fn">handle</span>(<span class="kw">final</span> <span class="cl">Command</span>&lt;<span class="cl">UserMasterRequest</span>&gt; command) {
+    <span class="kw">final</span> <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">String</span>&gt; result = service.savePayload(command);
+
+    <span class="kw">return</span> <span class="cl">UserMasterResponse</span>.builder()
+        .response(result)
+        .build();
+  }
+}</pre>
+            </div>
+          </div>
+
+          <!-- TAB 7 -->
           <div id="t7" class="tab-panel">
-            <h3 class="sh">Step 6 — Define Your Command Handler</h3>
-            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">
-              Note: Do not use the @Transactional from Spring boot as the
-              transactions in the framework are programmetically invoked
-              inside the DefaultCommandPipeline object.
+            <h3 class="sh">Step 7 — Custom Post-Processor with Resilience4j (Optional)</h3>
+            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">Provide your own
+              <ic>CommandPostProcessor</ic> bean to override the default. If supplied, <ic>DefaultCommandPostProcessor
+              </ic> is not registered by the builder.
             </p>
             <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · UserCommandHandler.java</span>
+              <div class="code-header"><span class="code-lang">java · ResiliencePostProcessor.java</span>
                 <div class="code-dots"><span></span><span></span><span></span></div>
               </div>
-              <pre><span class="kw">package</span> org.example.handler;
+              <pre><span class="an">@Slf4j @RequiredArgsConstructor</span>
+<span class="kw">public class</span> <span class="cl">ResiliencePostProcessor</span>&lt;<span class="cl">T</span>&gt; <span class="kw">implements</span> <span class="cl">CommandPostProcessor</span>&lt;<span class="cl">T</span>&gt; {
 
-        <span class="an">@RequiredArgsConstructor @Component</span>
-        <span class="kw">public class</span> <span class="cl">UserCommandHandler</span> 
-            <span class="kw">extends</span> <span class="cl">AbstractCommandHandler</span>&lt;<span class="cl">UserMasterRequest, UserMasterResponse</span>&gt; {
+  <span class="kw">private final</span> <span class="cl">CommandStore</span> commandStore;
+  <span class="kw">private final</span> <span class="cl">AtomicInteger</span> counter = <span class="kw">new</span> <span class="cl">AtomicInteger</span>(<span class="nu">0</span>);
 
-            <span class="kw">private final</span> <span class="cl">UserMasterService</span> service;
+  <span class="an">@Retry</span>(name = <span class="st">"run"</span>, fallbackMethod = <span class="st">"onRetryExhaustion"</span>)
+  <span class="an">@Override</span>
+  <span class="kw">public void</span> <span class="fn">run</span>(<span class="kw">final</span> <span class="cl">Command</span>&lt;<span class="cl">T</span>&gt; command) {
+    <span class="kw">int</span> attempt = counter.incrementAndGet();
+    log.info(<span class="st">"Attempt {} for command {}"</span>, attempt, command.getId());
 
-            <span class="an">@Override</span>
-            <span class="kw">public</span> <span class="cl">UserMasterResponse</span> handle(
-                <span class="kw">final</span> <span class="cl">Command</span>&lt;<span class="cl">UserMasterRequest</span>&gt; command) {
+    <span class="cm">// perform side-effect (e.g. event publishing)</span>
+    commandStore.update(command.getId(), <span class="cl">CommandStatus</span>.COMPLETED);
+  }
 
-                <span class="kw">final</span> <span class="cl">Map</span>&lt;<span class="cl">String</span>, <span class="cl">String</span>&gt; responseMap = service.savePayload(command);
-
-                <span class="kw">return</span> <span class="cl">UserMasterResponse</span>.builder()
-                    .response(responseMap)
-                    .build();
-            }
-        }</pre>
+  <span class="cm">// Resilience4j fallback — exhausted retries</span>
+  <span class="kw">public void</span> <span class="fn">onRetryExhaustion</span>(<span class="kw">final</span> <span class="cl">Command</span>&lt;<span class="cl">T</span>&gt; command, <span class="kw">final</span> <span class="cl">Throwable</span> t) {
+    log.error(<span class="st">"Retries exhausted for command {}. Marking FAILED."</span>, command.getId(), t);
+    commandStore.update(command.getId(), <span class="cl">CommandStatus</span>.FAILED, t);
+    <span class="kw">throw new</span> <span class="cl">RuntimeException</span>(t);
+  }
+}</pre>
+            </div>
+            <div class="callout info">
+              <span class="callout-icon">💡</span>
+              <div>Because this post-processor failure is caught by <ic>DefaultCommandPipeline</ic>'s Phase 3 catch
+                block, the retry exhaustion exception will trigger the <ic>POST_PROCESSING</ic> failure strategies and
+                roll back to the savepoint before marking the command FAILED.</div>
             </div>
           </div>
 
-          <!-- TAB 8: PostProcessors -->
+          <!-- TAB 8 -->
           <div id="t8" class="tab-panel">
-            <h3 class="sh">Step 7 — Extend Your Command PostProcessors with Resilience(Optional) </h3>
-            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">
-              If you do define your own post processor make sure it is updated inside the
-              spring configuration file.
-            </p>
+            <h3 class="sh">Step 8 — REST Controller</h3>
+            <p style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1rem;line-height:1.7">The <ic>
+                x-cqrs-idempotency-id</ic> header is required. The <ic>correlationId</ic> is read from the request
+              attribute set by <ic>CommandCorrelationFilter</ic>.</p>
             <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · ResiliencePostProcessor.java</span>
+              <div class="code-header"><span class="code-lang">java · CommandController.java</span>
                 <div class="code-dots"><span></span><span></span><span></span></div>
               </div>
-              <pre><span class="kw">package</span> org.example.postprocessor;
+              <pre><span class="an">@RequiredArgsConstructor @RestController @RequestMapping</span>(path = <span class="st">"/api"</span>)
+<span class="kw">public class</span> <span class="cl">CommandController</span> {
 
-          <span class="an">@Slf4j @RequiredArgsConstructor</span>
-          <span class="kw">public class</span> <span class="cl">ResiliencePostProcessor</span>&lt;<span class="cl">T</span>&gt; {
+  <span class="kw">private final</span> <span class="cl">CommandPipeline</span> pipeline;
 
-          <span class="kw">private final</span> <span class="cl">CommandStore</span> commandStore;
-          <span class="kw">private final</span> <span class="cl">CommandTransactionManager</span> transactionManager;
-          <span class="kw">private final</span> <span class="cl">AtomicInteger</span> counter = <span class="kw">new</span> <span class="cl">AtomicInteger</span>(0);
+  <span class="an">@PostMapping</span>(path = <span class="st">"/{version}/add-user-master"</span>)
+  <span class="kw">public</span> <span class="cl">ResponseEntity</span>&lt;<span class="cl">UserMasterResponse</span>&gt; <span class="fn">addUserMaster</span>(
+      <span class="an">@RequestHeader</span>(value = <span class="cl">CommandConstants</span>.COMMAND_IDEMPOTENCY_HEADER, required = <span class="kw">true</span>) <span class="cl">UUID</span> idempotencyKey,
+      <span class="an">@PathVariable</span>(<span class="st">"version"</span>) <span class="cl">String</span> version,
+      <span class="cl">HttpServletRequest</span> httpRequest,
+      <span class="an">@RequestBody</span> <span class="cl">UserMasterRequest</span> request) {
 
-          <span class="an">@Retry</span>(name = <span class="st">"run"</span>, fallbackMethod = <span class="st">"updateCommandToFailedOnRetryExhaustion"</span>)
-          <span class="kw">public void</span> <span class="cl">run</span>(<span class="kw">final</span> <span class="cl">Command</span>&lt;<span class="cl">T</span>&gt; command) {
+    <span class="kw">final</span> <span class="cl">String</span> correlationId =
+        (<span class="cl">String</span>) httpRequest.getAttribute(<span class="cl">CommandConstants</span>.COMMAND_CORRELATION_ID_HEADER);
 
-          <span class="kw">int</span> attempt = counter.incrementAndGet();
-          log.info(<span class="st">"Attempt {} for command {}"</span>, attempt, command.getId());
+    <span class="kw">final</span> <span class="cl">UserCommand</span> command = <span class="kw">new</span> <span class="cl">UserCommand</span>();
+    command.setId(<span class="cl">UUID</span>.randomUUID());
+    command.setIdempotencyKey(idempotencyKey.toString());
+    command.setCorrelationId(correlationId);
+    command.setRequestUrl(httpRequest.getRequestURL().toString());
+    command.setApiVersion(version + <span class="st">".0"</span>);
+    command.setClassName(<span class="cl">UserMasterRequest</span>.class.getName());
+    command.setPayload(request);
+    command.setCreatedAt(<span class="cl">OffsetDateTime</span>.now());
 
-          <span class="cm">// Simulates a Failed Condition comment for real code</span>
-          <span class="kw">if</span> (attempt &lt; 3) {
-              <span class="kw">throw new</span> <span class="cl">RuntimeException</span>(<span class="st">"Simulated transient failure"</span>);
-          }
+    <span class="cm">// pipeline.send() is lazy — execution begins on .get()</span>
+    <span class="kw">final</span> <span class="cl">UserMasterResponse</span> response = pipeline.&lt;<span class="cl">UserMasterRequest</span>, <span class="cl">UserMasterResponse</span>&gt;send(command).get();
 
-          commandStore.update(command.getId(), <span class="cl">CommandStatus</span>.COMPLETED);
-          log.info(<span class="st">"Command {} marked as COMPLETED"</span>, command.getId());
-            }
-
-                <span class="kw">public void</span> <span class="cl">updateCommandToFailedOnRetryExhaustion</span>(
-                <span class="kw">final</span> <span class="cl">Command</span>&lt;<span class="cl">T</span>&gt; command, 
-                <span class="kw">final</span> <span class="cl">Throwable</span> t) {
-
-                log.error(<span class="st">"Retries exhausted for command {}. Marking as FAILED. Reason: {}"</span>,
-                    command.getId(), t.getMessage());
-                    commandStore.update(command.getId(), <span class="cl">CommandStatus</span>.FAILED, t);
-
-                <span class="kw">throw new</span> <span class="cl">RuntimeException</span>(t);
-            }
-          }</pre>
+    <span class="kw">return</span> <span class="cl">ResponseEntity</span>.status(<span class="cl">HttpStatus</span>.CREATED).body(response);
+  }
+}</pre>
             </div>
           </div>
-
-          <!-- TAB 8: API Usage -->
-          <div id="t9" class="tab-panel">
-            <h3 class="sh">Step 8 — Usage inside the API</h3>
-            <div class="code-block">
-              <div class="code-header">
-                <span class="code-lang">java · CommandController.java</span>
-                <div class="code-dots"><span></span><span></span><span></span></div>
-              </div>
-              <pre>
-        <span class="an">@RequiredArgsConstructor</span>
-        <span class="an">@RestController</span>
-        <span class="an">@RequestMapping</span>(path = <span class="st">"/api"</span>)
-        <span class="kw">public class</span> <span class="cl">CommandController</span> {
-
-          <span class="kw">private final</span> <span class="cl">CommandPipeline</span> pipeline;
-
-          <span class="an">@PostMapping</span>(path = <span class="st">"/{version}/add-user-master"</span>, version = <span class="st">"2.0"</span>)
-          <span class="kw">public</span> <span class="cl">ResponseEntity</span>&lt;<span class="cl">UserMasterResponse</span>&gt; <span class="fn">addUserMaster</span>(
-              <span class="kw">final</span> <span class="an">@RequestHeader</span>(value = <span class="cl">CommandConstants</span>.COMMAND_IDEMPOTENCY_HEADER, required = <span class="kw">true</span>) <span class="cl">UUID</span> idempotencyKey,
-              <span class="kw">final</span> <span class="an">@PathVariable</span>(<span class="st">"version"</span>) <span class="cl">String</span> version,
-              <span class="kw">final</span> <span class="cl">HttpServletRequest</span> httpRequest,
-              <span class="kw">final</span> <span class="an">@RequestBody</span> <span class="cl">UserMasterRequest</span> request) {
-
-            <span class="kw">final</span> <span class="cl">String</span> correlationId =
-                (<span class="cl">String</span>) httpRequest.getAttribute(<span class="cl">CommandConstants</span>.COMMAND_CORRELATION_ID_HEADER);
-
-            <span class="kw">final</span> <span class="cl">UserCommand</span> command = <span class="kw">new</span> <span class="cl">UserCommand</span>();
-            command.setId(<span class="cl">UUID</span>.randomUUID());
-            command.setIdempotencyKey(idempotencyKey.toString());
-            command.setCorrelationId(correlationId);
-            command.setRequestUrl(httpRequest.getRequestURL().toString());
-            command.setApiVersion(version + <span class="st">".0"</span>);
-            command.setClassName(<span class="cl">UserMasterRequest</span>.class.getName());
-            command.setPayload(request);
-            command.setCreatedAt(<span class="cl">OffsetDateTime</span>.now());
-
-            <span class="kw">final</span> <span class="cl">Supplier</span>&lt;<span class="cl">UserMasterResponse</span>&gt; response =
-                pipeline.send(command);
-
-            <span class="kw">final</span> <span class="cl">UserMasterResponse</span> userMasterResponse = response.get();
-
-            <span class="kw">return</span> <span class="cl">ResponseEntity</span>
-                .status(<span class="cl">HttpStatus</span>.CREATED)
-                .body(userMasterResponse);
-          }
-        }
-          </pre>
-            </div>
-          </div>
-
+        </div>
       </section>
     </div>
   </div>
 
-  <!-- API REFERENCE -->
+  <!-- ══ API REFERENCE ══ -->
   <div id="api">
     <div class="wrapper">
       <section>
@@ -2421,216 +2450,291 @@
                 <th>Type</th>
                 <th>Kind</th>
                 <th>Package</th>
-                <th>Key Methods</th>
+                <th>Key Methods / Fields</th>
                 <th>Notes</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Command&lt;T&gt;</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-green)">class</span></td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
-                <td>getters/setters for all fields</td>
-                <td>Serializable. Not thread-safe. One per request.</td>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-green)">class</span>
+                </td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
+                <td>id, idempotencyKey, status, correlationId, tenantId, username, requestUrl, className, apiVersion,
+                  payload, error, createdAt, updatedAt</td>
+                <td>Serializable. Not thread-safe. Default status is INIT.</td>
               </tr>
               <tr>
                 <td>CommandHandler&lt;REQ,RES&gt;</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
-                <td>handle(cmd), matches(cmd), requestTypeToken()</td>
-                <td>Extend AbstractCommandHandler instead.</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
+                <td>requestTypeToken(), handle(cmd), matches(cmd)</td>
+                <td>Default matches() is raw-type only. Extend AbstractCommandHandler.</td>
               </tr>
               <tr>
                 <td>AbstractCommandHandler&lt;REQ,RES&gt;</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-amber)">abstract</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-amber)">abstract</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
                 <td>requestTypeToken(), responseTypeToken()</td>
-                <td>Uses Guava TypeToken to capture generic params.</td>
+                <td>Guava TypeToken resolves REQ and RES at construction via getClass().</td>
               </tr>
               <tr>
                 <td>CommandPipeline</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
                 <td>send(command): Supplier&lt;RES&gt;</td>
-                <td>Entry point. Returns lazy Supplier.</td>
+                <td>Entry point. Lazy execution — triggers on Supplier.get().</td>
               </tr>
               <tr>
                 <td>CommandMiddleware</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
                 <td>invoke(command): void</td>
-                <td>Pre-handler. Implement Ordered for priority.</td>
+                <td>Pre-handler. Failure here = EXECUTION stage. Implement Ordered for priority.</td>
               </tr>
               <tr>
                 <td>CommandPostProcessor&lt;T&gt;</td>
                 <td><span
-                    style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">@FunctionalInterface</span>
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">@FunctionalInterface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
                 <td>run(command): void</td>
-                <td>Post-handler. Runs after successful execution.</td>
+                <td>Post-handler. Failure here = POST_PROCESSING stage (same catch as handler).</td>
               </tr>
               <tr>
                 <td>CommandStore</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
                 <td>save, update(id,status), update(id,status,t)</td>
-                <td>Persistence abstraction. Implement for custom storage.</td>
+                <td>DefaultCommandService manages its own tx per operation — independent of pipeline tx.</td>
               </tr>
               <tr>
                 <td>CommandTransactionManager</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">transactions</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">transactions
+                </td>
                 <td>execute(action), executeIndependent(action)</td>
-                <td>Decouple from JDBC. Implement for JPA/Spring TX.</td>
+                <td>JdbcImpl uses JdbcConnectionHolder ThreadLocal for propagation. NoOp silently skips
+                  executeIndependent.</td>
               </tr>
               <tr>
                 <td>CommandSavepointManager</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">transactions</td>
-                <td>savePoint, rollbackToSavepoint, releaseSavepoint</td>
-                <td>Partial rollback within active transaction.</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">transactions
+                </td>
+                <td>savePoint, rollbackToSavepoint, releaseSavepoint, setRollbackOnly</td>
+                <td>JdbcImpl stores savepoints in LinkedHashMap. setRollbackOnly calls connection.rollback().</td>
               </tr>
               <tr>
                 <td>CommandFailureStrategy</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">failure</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">failure</td>
                 <td>supports(stage), onFailure(cmd, t)</td>
-                <td>Pluggable. Multiple per pipeline. Stage-filtered.</td>
+                <td>EXECUTION strategies run via executeIndependent(); POST_PROCESSING within same tx.</td>
+              </tr>
+              <tr>
+                <td>CommandFailureStage</td>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-purple)">enum</span>
+                </td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">failure</td>
+                <td>EXECUTION, POST_PROCESSING</td>
+                <td>EXECUTION = middleware/routing failure. POST_PROCESSING = handler OR post-processor failure.</td>
               </tr>
               <tr>
                 <td>PipelineResult&lt;T&gt;</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-purple)">sealed</span></td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-purple)">sealed
+                    interface</span></td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
                 <td>success(v), failure(ex), getOrThrow()</td>
-                <td>Commit-before-throw pattern carrier.</td>
+                <td>getOrThrow() uses switch expression over Success/Failure records. Enables commit-before-throw.</td>
               </tr>
               <tr>
                 <td>CommandStatus</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-purple)">enum</span></td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">core</td>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-purple)">enum</span>
+                </td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">core</td>
                 <td>INIT, PENDING, PROCESSING, COMPLETED, FAILED</td>
-                <td>Immutable. Thread-safe.</td>
+                <td>Default status on construction is INIT. Immutable, thread-safe.</td>
               </tr>
               <tr>
                 <td>CommandModuleBuilder</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-amber)">final class</span>
-                </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">infrastructure</td>
-                <td>create(), handler(), build()</td>
-                <td>Fluent builder. Not thread-safe. Init-time only.</td>
+                <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-amber)">final
+                    class</span></td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">
+                  infrastructure</td>
+                <td>create(), handler(), handlers(), middleware(), commandStore(), build()</td>
+                <td>Fluent builder. Not thread-safe. build() throws if no handlers registered. Defaults apply only when
+                  commandStore != null AND list is empty.</td>
+              </tr>
+              <tr>
+                <td>CommandModule</td>
+                <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-amber)">final
+                    class</span></td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">
+                  infrastructure</td>
+                <td>getPipeline(), getRouter(), getExecutor(), getCommandStore()</td>
+                <td>Immutable composition root. Thread-safe if all contained components are thread-safe.</td>
               </tr>
               <tr>
                 <td>JdbcCommandTransactionManager</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-green)">final class</span>
-                </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">jdbc</td>
+                <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-green)">final
+                    class</span></td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">jdbc</td>
                 <td>execute(), executeIndependent()</td>
-                <td>Thread-safe. Uses JdbcConnectionHolder (ThreadLocal).</td>
+                <td>execute() joins if JdbcConnectionHolder is bound, else creates new. executeIndependent() always
+                  creates fresh connection — not bound to ThreadLocal.</td>
+              </tr>
+              <tr>
+                <td>JdbcCommandSavepointManager</td>
+                <td><span style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-green)">final
+                    class</span></td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">jdbc</td>
+                <td>savePoint, rollbackToSavepoint, releaseSavepoint</td>
+                <td>Not thread-safe. Scoped to one Connection/transaction. putIfAbsent on savepoints.</td>
+              </tr>
+              <tr>
+                <td>CommandJsonMapper</td>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-green)">class</span>
+                </td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">utils.mapper
+                </td>
+                <td>map(JsonNode): T, map(Object): JsonNode, mapToString(Object)</td>
+                <td>Embeds @class field in JSON. Uses Class.forName() — requires concrete named classes.</td>
               </tr>
               <tr>
                 <td>Ordered</td>
-                <td><span style="font-family:var(--mono);font-size:.75rem;color:var(--accent-blue)">interface</span>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-blue)">interface</span>
                 </td>
-                <td style="color:var(--text-muted);font-family:var(--mono);font-size:.75rem">utils</td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">utils</td>
                 <td>getOrder(): int</td>
-                <td>Lower = higher priority. Implement alongside Middleware / PP.</td>
+                <td>Lower value = higher priority. Components without Ordered default to Integer.MAX_VALUE.</td>
+              </tr>
+              <tr>
+                <td>NoOpCommandTransactionManager</td>
+                <td><span
+                    style="font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:var(--accent-red)">class</span>
+                </td>
+                <td style="color:var(--text-muted);font-family:'IBM Plex Mono',monospace;font-size:.75rem">transactions
+                </td>
+                <td>execute(), executeIndependent()</td>
+                <td>⚠ executeIndependent() returns null without running the action — EXECUTION-stage failure strategies
+                  are silently skipped. Testing use only.</td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <h2 class="sh" style="margin-top:3rem">Default Implementations Auto-Applied by CommandModuleBuilder</h2>
+        <h2 class="sh" style="margin-top:3rem">Defaults Auto-Applied by CommandModuleBuilder</h2>
         <div class="grid-3" style="margin-top:1rem">
-          <div class="card">
+          <div class="card reveal">
             <div class="comp-type">middleware</div>
             <div class="comp-title"
-              style="font-family:var(--mono);font-size:.8rem;color:var(--text-primary);margin:.5rem 0">
+              style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--text-primary);margin:.5rem 0">
               DefaultCommandPersistenceMiddleware</div>
-            <div class="comp-desc">Saves command with <ic>PROCESSING</ic> status before execution. Applied when
-              CommandStore is configured and no custom middleware provided.</div>
+            <div class="comp-desc">Calls <ic>save(cmd, PROCESSING)</ic> before execution. Applied when <ic>commandStore
+                != null</ic> and <ic>middlewares</ic> list is empty.</div>
           </div>
-          <div class="card">
+          <div class="card reveal">
             <div class="comp-type">post-processor</div>
             <div class="comp-title"
-              style="font-family:var(--mono);font-size:.8rem;color:var(--text-primary);margin:.5rem 0">
+              style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--text-primary);margin:.5rem 0">
               DefaultCommandPostProcessor</div>
-            <div class="comp-desc">Updates command status to <ic>COMPLETED</ic> after successful execution. Applied when
-              CommandStore is configured and no custom post-processor provided.</div>
+            <div class="comp-desc">Calls <ic>update(id, COMPLETED)</ic> after handler success. Applied when <ic>
+                commandStore != null</ic> and <ic>postProcessors</ic> list is empty.</div>
           </div>
-          <div class="card">
-            <div class="comp-type">failure</div>
+          <div class="card reveal">
+            <div class="comp-type">failure strategies (×2)</div>
             <div class="comp-title"
-              style="font-family:var(--mono);font-size:.8rem;color:var(--text-primary);margin:.5rem 0">
-              DefaultCommandExecution/PostProcessorFailure</div>
-            <div class="comp-desc">Updates command status to <ic>FAILED</ic> with full stack trace for both failure
-              stages. Applied when CommandStore configured and no custom strategy provided.</div>
+              style="font-family:'IBM Plex Mono',monospace;font-size:.8rem;color:var(--text-primary);margin:.5rem 0">
+              DefaultCommandExecutionFailure + DefaultCommandPostProcessorFailure</div>
+            <div class="comp-desc">Both call <ic>update(id, FAILED, throwable)</ic> and log the error. Applied when <ic>
+                commandStore != null</ic> and <ic>failureStrategies</ic> list is empty.</div>
           </div>
         </div>
-
       </section>
     </div>
   </div>
 
-  <!-- FOOTER -->
+  <!-- ══ FOOTER ══ -->
   <footer>
     <div class="wrapper">
-      <p style="margin-bottom:.5rem">
-        <strong style="color:var(--text-secondary)">CQRS - Command Query Responsibility Segregation</strong>
-      </p>
-      <p>
-        Licensed under the
-        <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a>
-        &nbsp;·&nbsp;
-        The Apache Software Foundation
-      </p>
-      <p style="margin-top:.5rem">
-        Pattern references: Chain of Responsibility · Strategy · Template Method · Supplier (Lazy Evaluation)
-      </p>
+      <p style="margin-bottom:.5rem"><strong style="color:var(--text-secondary)">CQRS — Extensible Orchestrated
+          Interceptor Workflows (EOIW)</strong></p>
+      <p>Licensed under the <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache License 2.0</a> &nbsp;·&nbsp;
+        The Apache Software Foundation</p>
+      <p style="margin-top:.5rem">Chain of Responsibility · Strategy · Template Method · Supplier (Lazy Evaluation) ·
+        Sealed Interfaces</p>
     </div>
   </footer>
 
   <script>
+    /* ── Theme toggle ── */
+    function toggleTheme() {
+      const html = document.documentElement;
+      const label = document.getElementById('theme-label');
+      const isDark = html.getAttribute('data-theme') === 'dark';
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      label.textContent = isDark ? 'Dark' : 'Light';
+      try { localStorage.setItem('cqrs-theme', isDark ? 'light' : 'dark'); } catch (e) { }
+    }
+
+    /* ── Restore saved theme ── */
+    (function () {
+      try {
+        const saved = localStorage.getItem('cqrs-theme');
+        if (saved && saved !== 'dark') {
+          document.documentElement.setAttribute('data-theme', saved);
+          const label = document.getElementById('theme-label');
+          if (label) label.textContent = 'Dark';
+        }
+      } catch (e) { }
+    })();
+
+    /* ── Tab switching ── */
     function switchTab(event, id) {
       const bar = event.target.closest('.tab-bar');
       const tabs = bar.parentElement;
-
       bar.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       tabs.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-
       event.target.classList.add('active');
       tabs.querySelector('#' + id).classList.add('active');
     }
 
-    // Subtle reveal animation
+    /* ── Scroll reveal ── */
     document.addEventListener('DOMContentLoaded', () => {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(e => {
-          if (e.isIntersecting) {
-            e.target.style.opacity = '1';
-            e.target.style.transform = 'translateY(0)';
-          }
-        });
-      }, { threshold: 0.08 });
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      }, { threshold: 0.07 });
 
-      document.querySelectorAll(
-        '.component-card, .card, .diagram-wrapper, .math-block, .callout'
-      ).forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(18px)';
-        el.style.transition = 'opacity .5s ease, transform .5s ease';
+      document.querySelectorAll('.reveal, .component-card, .card, .callout, .math-block').forEach(el => {
+        el.classList.add('reveal');
         observer.observe(el);
       });
     });
   </script>
+
 </body>
 
 </html>
